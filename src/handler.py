@@ -2,20 +2,6 @@ from service_exception import ServiceException
 from manager import Manager
 
 import json
-import sys
-import properties
-import pymysql
-
-rds_host = properties.db_host
-name = properties.db_username
-password = properties.db_password
-db_name = properties.db_name
-
-try:
-    conn = pymysql.connect(rds_host, user = name, passwd = password, db = db_name, connect_timeout = 5)
-except Exception as e:
-    print("ERROR: Could not connect to MySQL", e)
-    sys.exit()
 
 def lambda_handler(event, context):
     try:
