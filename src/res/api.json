@@ -1,0 +1,91 @@
+{
+	"/users": {
+		"get": {
+			"description": "Get all users."
+		},
+		"post": {
+			"description": "Create a new user."
+		}
+	},
+	"/users/{userId}": {
+		"get": {
+			"description": "Get the information about a user."
+		},
+		"put": {
+			"description": "Update the information about a user."
+		},
+		"delete": {
+			"description": "Delete a user."
+		}
+	},
+	"/players": {
+		"get": {
+			"description": "Get all players."
+		},
+		"post": {
+			"description": "Create a new player."
+		}
+	},
+	"/players/{playerId}": {
+		"get": {
+			"description": "Get the information for a player."
+		},
+		"put": {
+			"description": "Update the information about a player."
+		},
+		"delete": {
+			"description": "Delete a player."
+		}
+	}
+	"/tournaments": {
+		"get": {
+			"description": "Get all tournaments."
+		},
+		"post": {
+			"description": "Create a tournament."
+		}
+	},
+	"/tournaments/{tournamentId}": {
+		"get": {
+			"description": "Get the information for a tournament."
+		},
+		"put": {
+			"description": "Update the information for a tournament. This function can be called to create the master bracket as well."
+		},
+		"delete": {
+			"description": "Delete a tournament."
+		}
+	},
+	"/tournaments/{tournamentId}/brackets": {
+		"get": {
+			"description": "Get all brackets for a given tournament."
+		},
+		"post": {
+			"description": "Create a bracket in a given tournament. This will also create all the matches and copy the starting values from the master bracket."
+		}
+	},
+	"/tournaments/{tournamentId}/brackets/{bracketId}": {
+		"get": {
+			"description": "Get the information for a bracket in a given tournament."
+		},
+		"put": {
+			"description": "Update the information for a bracket in a given tournament."
+		},
+		"delete": {
+			"description": "Delete a bracket in a given tournament."
+		}
+	},
+	"/tournaments/{tournamentId}/brackets/{bracketId}/matches": {
+		"get": {
+			"description": "Get all matches for the given bracket in the given tournament. This function will be used to generate the UI for the mobile app's bracket."
+		}
+	},
+	"/tournaments/{tournamentId}/brackets/{bracketId}/matches/{matchId}": {
+		"get": {
+			"description": "Get the information for a match in a given bracket for a given tournament."
+		},
+		"put": {
+			"description": "Update the information for a match in a given bracket for a given tournament."
+		}
+	}
+}
