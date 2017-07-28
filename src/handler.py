@@ -27,8 +27,12 @@ def lambda_handler(event, context):
 
         manager = Manager()
 
-        if resource == "/brackets" and method == "GET":
-            response_body = manager.get_brackets()
+        if resource == "/brackets":
+            if method == "GET":
+                response_body = manager.get_brackets()
+            elif method == "POST":
+                # TODO: Parse request body and pass into create_bracket
+                response_body = manager.create_bracket()
 
         # TODO: Fill in more endpoints here
 
