@@ -12,12 +12,9 @@ class Manager:
         # TODO: Actually create the brackets
         return None
 
+    def get_bracket(self, bracket_id):
+        return da.get_bracket(bracket_id)
+
     def edit_bracket(self):
-        # TODO: Edit the bracket?
+        # TODO: edit the bracket
         return None
-
-    def delete_bracket(self):
-        # TODO: delete the bracket
-        return None
-
-

@@ -19,6 +19,19 @@ def lambda_handler(event, context):
             elif method == "POST":
                 # TODO: Parse request body and pass into create_bracket
                 response_body = manager.create_bracket()
+            else:
+                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
+
+        elif resource == "/brackets/{bracketId}":
+            if method == "GET":
+                bracket_id = path_parameters["bracketId"]
+                response_body = manager.get_bracket(bracket_id)
+            elif method == "PUT":
+                # TODO: parse path parameters
+                response_body = manager.edit_bracket()
+            else:
+                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
+
 
         # TODO: Fill in more endpoints here
 
