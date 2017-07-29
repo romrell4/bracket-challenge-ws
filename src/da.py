@@ -9,7 +9,7 @@ password = properties.db_password
 db_name = properties.db_name
 
 try:
-    conn = pymysql.connect(rds_host, user = name, passwd = password, db = db_name, connect_timeout = 5)
+    conn = pymysql.connect(rds_host, user = name, passwd = password, db = db_name, autocommit = True)
 except Exception as e:
     print("ERROR: Could not connect to MySQL", e)
     sys.exit()
@@ -17,24 +17,27 @@ except Exception as e:
 ### USERS ###
 
 def get_users():
-    return None # TODO
+    return get_list("SELECT * FROM users")
 
 def get_user(user_id):
-    return None # TODO
+    return get_one("SELECT * FROM users WHERE user_id = {}".format(user_id))
 
 def create_user(user):
-    return None # TODO
+    user_id = insert("INSERT INTO users (username, name) VALUES ({}, {})".format(user["username"], user["name"]))
+    return get_user(user_id)
 
 def update_user(user_id, user):
-    return None # TODO
+    execute("UPDATE users SET username = {}, name = {} WHERE user_id = {}".format(user["username"], user["name"], user_id))
+    return get_user(user_id)
 
 def delete_user(user_id):
+    execute("DELETE FROM users WHERE user_id = {}".format(user_id))
     return None # TODO
 
 ### PLAYERS ###
 
 def get_players():
-    return None # TODO
+    return None
 
 def get_player(player_id):
     return None # TODO
@@ -113,3 +116,12 @@ def get_one(sql):
     with conn.cursor() as cur:
         cur.execute(sql)
         return cur.fetchone()
+
+def insert(sql):
+    with conn.cursor() as cur:
+        cur.execute(sql)
+        return cur.lastrowid
+
+def execute(sql):
+    with conn.cursor() as cur:
+        cur.execute(sql)

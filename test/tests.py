@@ -27,9 +27,16 @@ def setup_event(resource, method = "GET", path_params = None, body = None):
 def execute():
     return handler.lambda_handler(EVENT, None)
 
+def assert_success(response):
+    assert response["statusCode"] < 300
+
 class UsersTest(unittest.TestCase):
     def test_get_users(self):
         setup_event("/users")
         response = execute()
-        print(response)
-        assert response["statusCode"] < 300
+        assert_success(response)
+
+    def test_get_user(self):
+        setup_event("/user/1")
+        response = execute()
+        assert_success(response)
