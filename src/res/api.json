@@ -21,6 +21,18 @@
 							}
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"post": {
@@ -48,6 +60,18 @@
 							"$ref": "#/definitions/user"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -72,6 +96,18 @@
 							"$ref": "#/definitions/user"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"put": {
@@ -105,6 +141,18 @@
 							"$ref": "#/definitions/user"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"delete": {
@@ -121,6 +169,18 @@
 					"200": {
 						"description": "Empty"
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -140,6 +200,18 @@
 							}
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"post": {
@@ -167,6 +239,18 @@
 							"$ref": "#/definitions/player"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -191,6 +275,18 @@
 							"$ref": "#/definitions/player"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"put": {
@@ -224,6 +320,18 @@
 							"$ref": "#/definitions/player"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"delete": {
@@ -240,6 +348,18 @@
 					"200": {
 						"description": "Empty"
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -259,6 +379,18 @@
 							}
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"post": {
@@ -286,6 +418,18 @@
 							"$ref": "#/definitions/tournament"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -310,6 +454,18 @@
 							"$ref": "#/definitions/tournament"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"put": {
@@ -343,6 +499,18 @@
 							"$ref": "#/definitions/tournament"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"delete": {
@@ -359,6 +527,18 @@
 					"200": {
 						"description": "Empty"
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -386,6 +566,18 @@
 							}
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"post": {
@@ -419,6 +611,18 @@
 							"$ref": "#/definitions/bracket"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -449,6 +653,18 @@
 							"$ref": "#/definitions/bracket"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"put": {
@@ -488,6 +704,18 @@
 							"$ref": "#/definitions/bracket"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"delete": {
@@ -510,6 +738,18 @@
 					"200": {
 						"description": "Empty"
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -543,6 +783,18 @@
 							}
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		},
@@ -579,6 +831,18 @@
 							"$ref": "#/definitions/match"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			},
 			"put": {
@@ -624,6 +888,18 @@
 							"$ref": "#/definitions/match"
 						}
 					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
 				}
 			}
 		}
