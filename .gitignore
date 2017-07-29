@@ -3,3 +3,4 @@ __pycache__
 .idea
 lambda.zip
 shared_secret.txt
+.DS_Store
