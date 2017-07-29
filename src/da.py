@@ -8,39 +8,98 @@ name = properties.db_username
 password = properties.db_password
 db_name = properties.db_name
 
-BRACKET_QUERY = """
-    select u.name, t.name, b.name, m.round, m.position, p1.name, p2.name, w.name
-    from brackets b
-    join matches m
-        on b.bracket_id = m.bracket_id
-    join users u
-        on b.user_id = u.user_id
-    join tournaments t
-        on b.tournament_id = t.tournament_id
-    join players p1
-        on m.player1_id = p1.player_id
-    join players p2
-        on m.player2_id = p2.player_id
-    join players w
-        on m.winner_id = w.player_id
-    where m.bracket_id = 2
-    order by round, position
-"""
-
 try:
     conn = pymysql.connect(rds_host, user = name, passwd = password, db = db_name, connect_timeout = 5)
 except Exception as e:
     print("ERROR: Could not connect to MySQL", e)
     sys.exit()
 
-def get_brackets():
-    return get_list("select * from brackets")
+### USERS ###
 
-def get_bracket(bracket_id):
-    return get_list(BRACKET_QUERY.format(bracket_id))
+def get_users():
+    return None # TODO
+
+def get_user(user_id):
+    return None # TODO
+
+def create_user(user):
+    return None # TODO
+
+def update_user(user_id, user):
+    return None # TODO
+
+def delete_user(user_id):
+    return None # TODO
+
+### PLAYERS ###
+
+def get_players():
+    return None # TODO
+
+def get_player(player_id):
+    return None # TODO
+
+def create_player(player):
+    return None # TODO
+
+def update_player(player_id, player):
+    return None # TODO
+
+def delete_player(player_id):
+    return None # TODO
+
+### TOURNAMENTS ###
 
 def get_tournaments():
-    return get_list("select * from tournaments")
+    return None # TODO
+
+def get_tournament(tournament_id):
+    return None # TODO
+
+def create_tournament(tournament):
+    return None # TODO
+
+def update_tournament(tournament_id, tournament):
+    return None # TODO
+
+def delete_tournament(tournament_id):
+    return None # TODO
+
+### BRACKETS ###
+
+def get_brackets():
+    return get_list("SELECT * FROM brackets")
+
+def get_bracket(bracket_id):
+    return None # TODO
+
+def create_bracket(bracket):
+    return None # TODO
+
+def update_bracket(bracket_id, bracket):
+    return None # TODO
+
+def delete_bracket(bracket_id):
+    return None # TODO
+
+### MATCHES ###
+
+def get_matches():
+    return None # TODO
+
+def get_match(match_id):
+    return None # TODO
+
+def create_match(match):
+    return None # TODO
+
+def update_match(match_id, match):
+    return None # TODO
+
+def delete_match(match_id):
+    return None # TODO
+
+### UTILS ###
 
 def get_list(sql):
     with conn.cursor() as cur:
