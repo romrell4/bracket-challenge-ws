@@ -1,91 +1,716 @@
 {
-	"/users": {
-		"get": {
-			"description": "Get all users."
+	"swagger": "2.0",
+	"info": {
+		"title": "Bracket Challenge API",
+		"version": "v1"
+	},
+	"paths": {
+		"/users": {
+			"get": {
+				"summary": "Get all users.",
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Users",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/user"
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Create a new user.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "user",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/user"
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "User",
+						"schema": {
+							"$ref": "#/definitions/user"
+						}
+					}
+				}
+			}
 		},
-		"post": {
-			"description": "Create a new user."
+		"/users/{userId}": {
+			"get": {
+				"summary": "Get the information about a user.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "userId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "User",
+						"schema": {
+							"$ref": "#/definitions/user"
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update the information about a user.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "userId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "user",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/user"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "User",
+						"schema": {
+							"$ref": "#/definitions/user"
+						}
+					}
+				}
+			},
+			"delete": {
+				"summary": "Delete a user.",
+				"parameters": [
+					{
+						"name": "userId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Empty"
+					}
+				}
+			}
+		},
+		"/players": {
+			"get": {
+				"summary": "Get all players.",
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Players",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/player"
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Create a new player.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "player",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/player"
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Player",
+						"schema": {
+							"$ref": "#/definitions/player"
+						}
+					}
+				}
+			}
+		},
+		"/players/{playerId}": {
+			"get": {
+				"summary": "Get the information for a player.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "playerId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Player",
+						"schema": {
+							"$ref": "#/definitions/player"
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update the information about a player.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "playerId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "player",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/player"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Player",
+						"schema": {
+							"$ref": "#/definitions/player"
+						}
+					}
+				}
+			},
+			"delete": {
+				"summary": "Delete a player.",
+				"parameters": [
+					{
+						"name": "playerId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Empty"
+					}
+				}
+			}
+		},
+		"/tournaments": {
+			"get": {
+				"summary": "Get all tournaments.",
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Tournaments",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/tournament"
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Create a tournament.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournament",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/tournament"
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Tournament",
+						"schema": {
+							"$ref": "#/definitions/tournament"
+						}
+					}
+				}
+			}
+		},
+		"/tournaments/{tournamentId}": {
+			"get": {
+				"summary": "Get the information for a tournament.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Tournament",
+						"schema": {
+							"$ref": "#/definitions/tournament"
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update the information for a tournament. This function can be called to create the master bracket as well.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "player",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/player"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Tournament",
+						"schema": {
+							"$ref": "#/definitions/tournament"
+						}
+					}
+				}
+			},
+			"delete": {
+				"summary": "Delete a tournament.",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Empty"
+					}
+				}
+			}
+		},
+		"/tournaments/{tournamentId}/brackets": {
+			"get": {
+				"summary": "Get all brackets for a given tournament.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Brackets",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bracket"
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"summary": "Create a bracket in a given tournament. This will also create all the matches and copy the starting values from the master bracket.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracket",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					}
+				],
+				"responses": {
+					"201": {
+						"description": "Bracket",
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					}
+				}
+			}
+		},
+		"/tournaments/{tournamentId}/brackets/{bracketId}": {
+			"get": {
+				"summary": "Get the information for a bracket in a given tournament.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Bracket",
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update the information for a bracket in a given tournament.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracket",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Bracket",
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					}
+				}
+			},
+			"delete": {
+				"summary": "Delete a bracket in a given tournament.",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Empty"
+					}
+				}
+			}
+		},
+		"/tournaments/{tournamentId}/brackets/{bracketId}/matches": {
+			"get": {
+				"summary": "Get all matches for the given bracket in the given tournament. This function will be used to generate the UI for the mobile app's bracket.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Matches",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/match"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/tournaments/{tournamentId}/brackets/{bracketId}/matches/{matchId}": {
+			"get": {
+				"summary": "Get the information for a match in a given bracket for a given tournament.",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "matchId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Match",
+						"schema": {
+							"$ref": "#/definitions/match"
+						}
+					}
+				}
+			},
+			"put": {
+				"summary": "Update the information for a match in a given bracket for a given tournament.",
+				"consumes": [
+					"application/json"
+				],
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "matchId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "match",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/match"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Match",
+						"schema": {
+							"$ref": "#/definitions/match"
+						}
+					}
+				}
+			}
 		}
 	},
-	"/users/{userId}": {
-		"get": {
-			"description": "Get the information about a user."
+	"definitions": {
+		"user": {
+			"properties": {
+				"user_id": {
+					"type": "integer"
+				},
+				"username": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				}
+			}
 		},
-		"put": {
-			"description": "Update the information about a user."
+		"player": {
+			"properties": {
+				"player_id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				}
+			}
 		},
-		"delete": {
-			"description": "Delete a user."
-		}
-	},
-	"/players": {
-		"get": {
-			"description": "Get all players."
+		"tournament": {
+			"properties": {
+				"tournament_id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				},
+				"master_bracket_id": {
+					"type": "integer"
+				}
+			}
 		},
-		"post": {
-			"description": "Create a new player."
-		}
-	},
-	"/players/{playerId}": {
-		"get": {
-			"description": "Get the information for a player."
+		"bracket": {
+			"properties": {
+				"bracket_id": {
+					"type": "integer"
+				},
+				"user_id": {
+					"type": "integer"
+				},
+				"tournament_id": {
+					"type": "integer"
+				},
+				"name": {
+					"type": "string"
+				}
+			}
 		},
-		"put": {
-			"description": "Update the information about a player."
-		},
-		"delete": {
-			"description": "Delete a player."
-		}
-	}
-	"/tournaments": {
-		"get": {
-			"description": "Get all tournaments."
-		},
-		"post": {
-			"description": "Create a tournament."
-		}
-	},
-	"/tournaments/{tournamentId}": {
-		"get": {
-			"description": "Get the information for a tournament."
-		},
-		"put": {
-			"description": "Update the information for a tournament. This function can be called to create the master bracket as well."
-		},
-		"delete": {
-			"description": "Delete a tournament."
-		}
-	},
-	"/tournaments/{tournamentId}/brackets": {
-		"get": {
-			"description": "Get all brackets for a given tournament."
-		},
-		"post": {
-			"description": "Create a bracket in a given tournament. This will also create all the matches and copy the starting values from the master bracket."
-		}
-	},
-	"/tournaments/{tournamentId}/brackets/{bracketId}": {
-		"get": {
-			"description": "Get the information for a bracket in a given tournament."
-		},
-		"put": {
-			"description": "Update the information for a bracket in a given tournament."
-		},
-		"delete": {
-			"description": "Delete a bracket in a given tournament."
-		}
-	},
-	"/tournaments/{tournamentId}/brackets/{bracketId}/matches": {
-		"get": {
-			"description": "Get all matches for the given bracket in the given tournament. This function will be used to generate the UI for the mobile app's bracket."
-		}
-	},
-	"/tournaments/{tournamentId}/brackets/{bracketId}/matches/{matchId}": {
-		"get": {
-			"description": "Get the information for a match in a given bracket for a given tournament."
-		},
-		"put": {
-			"description": "Update the information for a match in a given bracket for a given tournament."
+		"match": {
+			"properties": {
+				"match_id": {
+					"type": "integer"
+				},
+				"bracket_id": {
+					"type": "integer"
+				},
+				"round": {
+					"type": "integer"
+				},
+				"position": {
+					"type": "integer"
+				},
+				"player1_id": {
+					"type": "integer"
+				},
+				"player2_id": {
+					"type": "integer"
+				},
+				"seed1": {
+					"type": "integer"
+				},
+				"seed2": {
+					"type": "integer"
+				},
+				"winner_id": {
+					"type": "integer"
+				}
+			}
 		}
 	}
 }
