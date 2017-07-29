@@ -1,15 +1,21 @@
-from service_exception import ServiceException
-from manager import Manager
-
 import json
+
+from manager import Manager
+from res import properties
+from service_exception import ServiceException
 
 def lambda_handler(event, context):
     try:
-        if "resource" not in event or "httpMethod" not in event:
-            raise ServiceException("Invalid request. No 'resource' or 'httpMethod' found in event", 400)
+        if event is None or "headers" not in event or "resource" not in event or "httpMethod" not in event:
+            raise ServiceException("Invalid request. No 'headers', 'resource', or 'httpMethod' found in event", 400)
+
+        auth = event["headers"]["Authorization"]
+        if not properties.validate(auth):
+            raise ServiceException("Unauthorized. Provided authentication did not validate", 403)
 
         resource, method = event["resource"], event["httpMethod"] # These will be used to specify which endpoint was being hit
         path_parameters = event["pathParameters"] # This will be used to get IDs and other parameters from the URL
+        body = event["body"] # This will be used for most POSTs and PUTs
 
         manager = Manager()
 
@@ -40,6 +46,7 @@ def lambda_handler(event, context):
 
         return format_response(response_body)
     except ServiceException as e:
+        print(e.error_message)
         return format_response({"error": e.error_message}, e.status_code)
 
 def format_response(body = None, status_code = 200):

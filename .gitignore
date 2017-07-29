@@ -2,3 +2,4 @@ properties.py
 __pycache__
 .idea
 lambda.zip
+shared_secret.txt

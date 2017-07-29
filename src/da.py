@@ -1,8 +1,7 @@
 import sys
-import properties
-import pymysql
 
-from model import Bracket
+import pymysql
+from res import properties
 
 rds_host = properties.db_host
 name = properties.db_username
@@ -38,7 +37,7 @@ def get_brackets():
     return get_list("select * from brackets")
 
 def get_bracket(bracket_id):
-    return Bracket(get_list(BRACKET_QUERY.format(bracket_id))).to_dict()
+    return get_list(BRACKET_QUERY.format(bracket_id))
 
 def get_tournaments():
     return get_list("select * from tournaments")
