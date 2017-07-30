@@ -8,19 +8,19 @@ CREATE TABLE users (
   UNIQUE (username)
 );
 
+CREATE TABLE players (
+  player_id INT AUTO_INCREMENT,
+  name      VARCHAR(50) NOT NULL,
+
+  PRIMARY KEY (player_id)
+);
+
 CREATE TABLE tournaments (
   tournament_id     INT AUTO_INCREMENT,
   name              VARCHAR(30) NOT NULL,
   master_bracket_id INT,
 
   PRIMARY KEY (tournament_id)
-);
-
-CREATE TABLE players (
-  player_id INT AUTO_INCREMENT,
-  name      VARCHAR(50) NOT NULL,
-
-  PRIMARY KEY (player_id)
 );
 
 CREATE TABLE brackets (
