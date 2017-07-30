@@ -55,24 +55,27 @@ def update_player(player_id, player):
 
 def delete_player(player_id):
     execute("DELETE FROM players WHERE player_id = {}".format(player_id))
-    return None
 
 ### TOURNAMENTS ###
 
 def get_tournaments():
-    return None # TODO
+    return get_list("SELECT * FROM tournaments", Tournament)
 
 def get_tournament(tournament_id):
-    return None # TODO
+    return get_one("SELECT * FROM tournaments WHERE tournament_id = {}".format(tournament_id))
 
 def create_tournament(tournament):
-    return None # TODO
+    # TODO: Fix KeyError if master_bracket_id is not provided
+    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id) VALUES ('{}', {})".format(tournament["name"], tournament["master_bracket_id"]))
+    return get_tournament(tournament_id)
 
 def update_tournament(tournament_id, tournament):
-    return None # TODO
+    # TODO: Fix KeyError if master_bracket_id is not provided
+    execute("UPDATE tournaments SET name = '{}', master_bracket_id = {} WHERE tournament_id = {}".format(tournament["name"], tournament["master_bracket_id"], tournament_id))
+    return get_tournament(tournament_id)
 
 def delete_tournament(tournament_id):
-    return None # TODO
+    execute("DELETE FROM tournaments WHERE tournament_id = {}".format(tournament_id))
 
 ### BRACKETS ###
 

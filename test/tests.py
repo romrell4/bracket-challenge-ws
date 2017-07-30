@@ -46,6 +46,14 @@ class MyTest(unittest.TestCase):
             lambda lhs, rhs: lhs["name"] == rhs["name"]
         )
 
+    def test_tournaments(self):
+        self.run_all_simple_tests(
+            "tournament", "tournaments",
+            {"name": "test"},
+            {"name": "test2"},
+            lambda lhs, rhs: lhs["name"] == rhs["name"]
+        )
+
     @staticmethod
     def run_all_simple_tests(singular, plural, original_obj, updated_obj, equals_function):
         path_param = "{}Id".format(singular)
