@@ -14,9 +14,7 @@ EVENT = {
     "pathParameters": {
 
     },
-    "body": {
-
-    }
+    "body": ""
 }
 
 def execute(resource, method = "GET", path_params = None, body = None):
@@ -58,10 +56,9 @@ class MyTest(unittest.TestCase):
         # Get all
         response = execute(endpoint1)
         assert_success(response)
-        size = len(json.loads(response["body"]))
 
         # Create
-        response = execute(endpoint1, "POST", body = json.dumps(obj))
+        response = execute(endpoint1, "POST", body = json.dumps(original_obj))
         assert_success(response)
         id = json.loads(response["body"])[id_key]
 
@@ -78,5 +75,5 @@ class MyTest(unittest.TestCase):
         assert equals_function(obj, updated_obj)
 
         # Delete
-        response = execute("/users/{userId}", "DELETE", path_params = {path_param: id})
+        response = execute(endpoint2, "DELETE", path_params = {path_param: id})
         assert_success(response)

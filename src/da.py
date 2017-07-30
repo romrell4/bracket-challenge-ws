@@ -1,6 +1,9 @@
 import sys
-
 import pymysql
+
+from model import *
+from service_exception import ServiceException
+
 from res import properties
 
 rds_host = properties.db_host
@@ -17,39 +20,42 @@ except Exception as e:
 ### USERS ###
 
 def get_users():
-    return get_list("SELECT * FROM users")
+    return get_list("SELECT * FROM users", User)
 
 def get_user(user_id):
-    return get_one("SELECT * FROM users WHERE user_id = {}".format(user_id))
+    return get_one("SELECT * FROM users WHERE user_id = {}".format(user_id), User)
 
 def create_user(user):
-    user_id = insert("INSERT INTO users (username, name) VALUES ({}, {})".format(user["username"], user["name"]))
+    user_id = insert("INSERT INTO users (username, name) VALUES ('{}', '{}')".format(user["username"], user["name"]))
     return get_user(user_id)
 
 def update_user(user_id, user):
-    execute("UPDATE users SET username = {}, name = {} WHERE user_id = {}".format(user["username"], user["name"], user_id))
+    execute("UPDATE users SET username = '{}', name = '{}' WHERE user_id = {}".format(user["username"], user["name"], user_id))
     return get_user(user_id)
 
 def delete_user(user_id):
     execute("DELETE FROM users WHERE user_id = {}".format(user_id))
-    return None # TODO
+    return None
 
 ### PLAYERS ###
 
 def get_players():
-    return None
+    return get_list("SELECT * FROM players", Player)
 
 def get_player(player_id):
-    return None # TODO
+    return get_one("SELECT * FROM players WHERE player_id = {}".format(player_id), Player)
 
 def create_player(player):
-    return None # TODO
+    player_id = insert("INSERT INTO players (name) VALUES ('{}')".format(player["name"]))
+    return get_player(player_id)
 
 def update_player(player_id, player):
-    return None # TODO
+    execute("UPDATE players SET name = '{}' WHERE player_id = {}".format(player["name"], player_id))
+    return get_player(player_id)
 
 def delete_player(player_id):
-    return None # TODO
+    execute("DELETE FROM players WHERE player_id = {}".format(player_id))
+    return None
 
 ### TOURNAMENTS ###
 
@@ -104,24 +110,40 @@ def delete_match(match_id):
 
 ### UTILS ###
 
-def get_list(sql):
-    with conn.cursor() as cur:
-        cur.execute(sql)
-        results = []
-        for row in cur.fetchall():
-            results.append(row)
-        return results
+def get_list(sql, klass):
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            results = []
+            for row in cur.fetchall():
+                results.append(klass(row).__dict__)
+            return results
+    except Exception as e:
+        print(e)
+        raise ServiceException("Error getting data from database")
 
-def get_one(sql):
-    with conn.cursor() as cur:
-        cur.execute(sql)
-        return cur.fetchone()
+def get_one(sql, klass):
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            return klass(cur.fetchone()).__dict__
+    except Exception as e:
+        print(e)
+        raise ServiceException("Error getting data from database")
 
 def insert(sql):
-    with conn.cursor() as cur:
-        cur.execute(sql)
-        return cur.lastrowid
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            return cur.lastrowid
+    except Exception as e:
+        print(e)
+        raise ServiceException("Error inserting data into database")
 
 def execute(sql):
-    with conn.cursor() as cur:
-        cur.execute(sql)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+    except Exception as e:
+        print(e)
+        raise ServiceException("Error executing database command")
