@@ -25,7 +25,7 @@ CREATE TABLE tournaments (
 
 CREATE TABLE brackets (
   bracket_id    INT AUTO_INCREMENT,
-  user_id       INT         NOT NULL,
+  user_id       INT,
   tournament_id INT         NOT NULL,
   name          VARCHAR(30) NOT NULL,
 
