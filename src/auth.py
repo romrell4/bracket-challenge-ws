@@ -1,16 +1,15 @@
-from service_exception import ServiceException
-from res import properties
-
 import requests
+from service_exception import ServiceException
 
-def validate(event):
+def validate_user(token):
     try:
-        token = event["headers"]["Authorization"]
-        response = requests.get("https://graph.facebook.com/debug_token?input_token={}&access_token={}".format(token, properties.app_access_token)).json()
-        data = response["data"]
-        if data["app_id"] == properties.app_id and data["is_valid"] and data["user_id"] is not None:
-            return data["user_id"]
-    except (KeyError, ValueError) as e:
+        # This call will also validate that the token is still active
+        response = requests.get("https://graph.facebook.com/me?fields=email,name&access_token={}".format(token))
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(response.status_code, response.text)
+    except ValueError as e:
         print(e)
 
     # Unless if we returned a valid user_id, throw a 403

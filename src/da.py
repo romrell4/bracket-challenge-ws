@@ -25,8 +25,8 @@ def get_users():
 def get_user(user_id):
     return get_one("SELECT * FROM users WHERE user_id = {}".format(user_id), User)
 
-def get_user_from_fb_user_id(fb_user_id):
-    return get_one("SELECT * FROM users WHERE username = '{}'".format(fb_user_id), User)
+def get_user_by_username(username):
+    return get_one("SELECT * FROM users WHERE username = '{}'".format(username), User)
 
 def create_user(user):
     user_id = insert("INSERT INTO users (username, name) VALUES ('{}', '{}')".format(user["username"], user["name"]))

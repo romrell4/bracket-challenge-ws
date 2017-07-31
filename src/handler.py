@@ -1,7 +1,6 @@
 import json
 
 from manager import Manager
-from res import properties
 import auth
 from service_exception import ServiceException
 
@@ -17,120 +16,14 @@ def lambda_handler(event, context):
         except:
             body = None
 
-        fb_user_id = auth.validate(event)
+        token = event["headers"]["Authorization"]
+        fb_user = auth.validate_user(token)
 
-        manager = Manager(fb_user_id)
+        manager = Manager(fb_user["email"])
 
-        if resource == "/login":
+        if resource == "/users":
             if method == "POST":
-                response_body = manager.login(body)
-        elif resource == "/users":
-            if method == "GET":
-                # TODO: parse path parameters
-                response_body = manager.get_users()
-            elif method == "POST":
-                # TODO: PARSE
-                response_body = manager.create_user(body)
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/users/{userId}":
-            user_id = path_parameters["userId"]
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_user(user_id)
-            elif method == "PUT":
-                #TODO: PARSE
-                response_body = manager.update_user(user_id, body)
-            elif method == "DELETE":
-                #TODO: PARSE
-                response_body = manager.delete_user(user_id)
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/players":
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_players()
-            elif method == "POST":
-                #TODO: PARSE
-                response_body = manager.create_player(body)
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/players/{playerId}":
-            player_id = path_parameters["playerId"]
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_player(player_id)
-            elif method == "PUT":
-                #TODO: PARSE
-                response_body = manager.update_player(player_id, body)
-            elif method == "DELETE":
-                #TODO: PARSE
-                response_body = manager.delete_player(player_id)
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/tournaments":
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_tournaments()
-            elif method == "POST":
-                #TODO: PARSE
-                response_body = manager.create_tournament()
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/tournaments/{tournamentId}":
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_tournament()
-            elif method == "PUT":
-                #TODO: PARSE
-                response_body = manager.edit_tournament()
-            elif method == "DELETE":
-                #TODO: PARSE
-                response_body = manager.delete_tournament()
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/tournaments/{tournamentId}/brackets":
-            if method == "GET":
-                response_body = manager.get_brackets()
-            elif method == "POST":
-                # TODO: Parse request body and pass into create_bracket
-                response_body = manager.create_bracket()
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}":
-            if method == "GET":
-                bracket_id = path_parameters["bracketId"]
-                response_body = manager.get_bracket(bracket_id)
-            elif method == "PUT":
-                # TODO: parse path parameters
-                response_body = manager.edit_bracket()
-            elif method == "DELETE":
-                #TODO: PARSE
-                response_body = manager.delete_bracket()
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}/matches":
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_match()
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
-        elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}/matches/{matchId}":
-            if method == "GET":
-                #TODO: PARSE
-                response_body = manager.get_match()
-            elif method == "PUT":
-                #TODO: PARSE
-                response_body = manager.edit_match()
+                response_body = manager.login(fb_user)
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
