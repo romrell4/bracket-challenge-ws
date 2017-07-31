@@ -20,12 +20,10 @@ def lambda_handler(event, context):
 
         manager = Manager(fb_user["email"])
 
-        if resource == "/users":
-            if method == "POST":
-                response_body = manager.login(fb_user)
-            else:
-                raise ServiceException("Invalid path: '{} {}'".format(resource, method))
-
+        if resource == "/users" and method == "POST":
+            response_body = manager.login(fb_user)
+        elif resource == "/tournaments" and method == "GET":
+            response_body = manager.get_tournaments()
         else:
             raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 

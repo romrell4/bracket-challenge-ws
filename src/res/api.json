@@ -33,6 +33,37 @@
 					"type": "aws_proxy"
 				}
 			}
+		},
+		"/tournaments": {
+			"get": {
+				"summary": "Get all tournaments.",
+				"produces": [
+					"application/json"
+				],
+				"responses": {
+					"200": {
+						"description": "Tournaments",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/tournament"
+							}
+						}
+					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
+				}
+			}
 		}
 	},
 	"definitions": {

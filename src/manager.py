@@ -19,3 +19,6 @@ class Manager:
         else:
             # They are logging in. Return the user attached to their authentication token
             return self.user
+
+    def get_tournaments(self):
+        return da.get_tournaments()
