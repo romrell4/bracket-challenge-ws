@@ -16,7 +16,7 @@ def lambda_handler(event, context):
         except:
             body = None
 
-        token = event["headers"]["Authorization"]
+        token = event["headers"]["Token"]
         fb_user = auth.validate_user(token)
 
         manager = Manager(fb_user["email"])
