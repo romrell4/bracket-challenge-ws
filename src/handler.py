@@ -14,31 +14,37 @@ def lambda_handler(event, context):
         path_parameters = event["pathParameters"] # This will be used to get IDs and other parameters from the URL
         try:
             body = json.loads(event["body"]) # This will be used for most POSTs and PUTs
-        except json.JSONDecodeError:
+        except:
             body = None
 
-        manager = Manager()
+        fb_user_id = auth.validate(event)
 
-        if resource == "/users":
+        manager = Manager(fb_user_id)
+
+        if resource == "/login":
+            if method == "POST":
+                response_body = manager.login(body)
+        elif resource == "/users":
             if method == "GET":
                 # TODO: parse path parameters
                 response_body = manager.get_users()
             elif method == "POST":
                 # TODO: PARSE
-                response_body = manager.create_user()
+                response_body = manager.create_user(body)
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
         elif resource == "/users/{userId}":
+            user_id = path_parameters["userId"]
             if method == "GET":
                 #TODO: PARSE
-                response_body = manager.get_user()
+                response_body = manager.get_user(user_id)
             elif method == "PUT":
                 #TODO: PARSE
-                response_body = manager.edit_user()
+                response_body = manager.update_user(user_id, body)
             elif method == "DELETE":
                 #TODO: PARSE
-                response_body = manager.delete_user()
+                response_body = manager.delete_user(user_id)
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
@@ -48,20 +54,21 @@ def lambda_handler(event, context):
                 response_body = manager.get_players()
             elif method == "POST":
                 #TODO: PARSE
-                response_body = manager.create_player()
+                response_body = manager.create_player(body)
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
         elif resource == "/players/{playerId}":
+            player_id = path_parameters["playerId"]
             if method == "GET":
                 #TODO: PARSE
-                response_body = manager.get_player()
+                response_body = manager.get_player(player_id)
             elif method == "PUT":
                 #TODO: PARSE
-                response_body = manager.edit_player()
+                response_body = manager.update_player(player_id, body)
             elif method == "DELETE":
                 #TODO: PARSE
-                response_body = manager.delete_player()
+                response_body = manager.delete_player(player_id)
             else:
                 raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
