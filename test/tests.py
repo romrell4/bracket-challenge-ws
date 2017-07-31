@@ -8,7 +8,7 @@ from res import properties
 
 EVENT = {
     "headers": {
-        "Authorization": properties.test_token
+        "Token": properties.test_token
     },
     "httpMethod": "GET",
     "resource": "/brackets",
