@@ -7,7 +7,7 @@ from res import properties
 
 EVENT = {
     "headers": {
-        "Authorization": properties.get_auth()
+        "Authorization": properties.test_token
     },
     "httpMethod": "GET",
     "resource": "/brackets",
@@ -31,6 +31,19 @@ def assert_success(response):
 
 class MyTest(unittest.TestCase):
     def test_users(self):
+        # Register as a new user
+        test_user = {"username": properties.test_user_id, "name": "Test"}
+        response = execute("/login", "POST", body = json.dumps(test_user))
+        assert_success(response)
+
+        # Login as an existing user
+        response = execute("/login", "POST", body = json.dumps(test_user))
+        assert_success(response)
+        user_id = json.loads(response["body"])["user_id"]
+
+        # Delete user
+        execute("/users/{userId}", "DELETE", path_params = {"userId": user_id})
+
         self.run_all_simple_tests(
             "user", "users",
             {"username": "test", "name": "test"},
@@ -46,7 +59,7 @@ class MyTest(unittest.TestCase):
             lambda lhs, rhs: lhs["name"] == rhs["name"]
         )
 
-    def test_tournaments(self):
+    def _test_tournaments(self):
         self.run_all_simple_tests(
             "tournament", "tournaments",
             {"name": "test"},

@@ -1,10 +1,23 @@
+from service_exception import ServiceException
+
 import da
 
 class Manager:
-    def __init__(self):
-        pass
+    def __init__(self, fb_user_id):
+        # TODO: Use this user to authorize certain operations
+        self.user = da.get_user_from_fb_user_id(fb_user_id)
 
     ### USERS ###
+
+    def login(self, user):
+        # Check if they are registering or logging in
+        if self.user is None:
+            # They are registering a new account
+            return self.create_user(user)
+        elif self.user["username"] == user["username"]:
+            # They are trying to login. See if their username matches the username in the auth user
+            return self.user
+        raise ServiceException("Login failed. Username did not match authenticated user", 403)
 
     def get_users(self):
         return da.get_users()
