@@ -83,10 +83,10 @@ def delete_tournament(tournament_id):
 ### BRACKETS ###
 
 def get_brackets():
-    return get_list("SELECT * FROM brackets")
+    return get_list("SELECT * FROM brackets", Bracket)
 
 def get_bracket(bracket_id):
-    return None # TODO
+    return get_one("SELECT * FROM brackets WHERE bracket_id = {}".format(bracket_id), Bracket)
 
 def create_bracket(bracket):
     return None # TODO
@@ -99,11 +99,21 @@ def delete_bracket(bracket_id):
 
 ### MATCHES ###
 
-def get_matches():
-    return None # TODO
-
-def get_match(match_id):
-    return None # TODO
+def get_matches(bracket_id):
+    return get_list("""
+        SELECT m.match_id, m.bracket_id, m.round, m.position,
+          m.player1_id, p1.name as player1_name,
+          m.player2_id, p2.name as player2_name,
+          m.seed1, m.seed2, m.winner_id, w.name as winner_name
+        FROM matches m
+        LEFT JOIN players p1
+          on m.player1_id = p1.player_id
+        LEFT JOIN players p2
+          on m.player2_id = p2.player_id
+        LEFT JOIN players w
+          on m.winner_id = w.player_id
+        WHERE bracket_id = {}
+        ORDER BY round, position""".format(bracket_id), MatchHelper)
 
 def create_match(match):
     return None # TODO

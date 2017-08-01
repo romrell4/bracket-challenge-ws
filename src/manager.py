@@ -1,7 +1,4 @@
-from service_exception import ServiceException
-
 import da
-import requests
 
 class Manager:
     def __init__(self, username):
@@ -22,3 +19,8 @@ class Manager:
 
     def get_tournaments(self):
         return da.get_tournaments()
+
+    def get_bracket(self, bracket_id):
+        bracket = da.get_bracket(bracket_id)
+        bracket["matches"] = da.get_matches(bracket_id)
+        return bracket

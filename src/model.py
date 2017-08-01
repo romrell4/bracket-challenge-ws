@@ -17,3 +17,7 @@ class Bracket:
 class Match:
     def __init__(self, result_set):
         [self.match_id, self.bracket_id, self.round, self.position, self.player1_id, self.player2_id, self.seed1, self.seed2, self.winner_id] = result_set
+
+class MatchHelper:
+    def __init__(self, result_set):
+        [self.match_id, self.bracket_id, self.round, self.position, self.player1_id, self.player1_name, self.player2_id, self.player2_name, self.seed1, self.seed2, self.winner_id, self.winner_name] = result_set

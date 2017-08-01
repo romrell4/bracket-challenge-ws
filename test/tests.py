@@ -31,7 +31,7 @@ def assert_success(response):
     assert response["statusCode"] < 300
 
 class MyTest(unittest.TestCase):
-    def test_users(self):
+    def test_login(self):
         # Register as a new user
         response = execute("/users", "POST")
         assert_success(response)
@@ -45,5 +45,10 @@ class MyTest(unittest.TestCase):
         da.delete_user(user_id)
 
     def test_get_tournaments(self):
-        response = execute("/tournaments", "GET")
+        response = execute("/tournaments")
+        assert_success(response)
+
+    def test_get_bracket(self):
+        response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": 1, "bracketId": 3})
+        print(response)
         assert_success(response)
