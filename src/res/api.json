@@ -64,6 +64,36 @@
 					"type": "aws_proxy"
 				}
 			}
+		},
+		"/tournaments/{tournamentId}/brackets/{bracketId}": {
+			"get": {
+				"summary": "Get the specified bracket",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Bracket",
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					}
+				}
+			}
 		}
 	},
 	"definitions": {
@@ -116,6 +146,14 @@
 				},
 				"name": {
 					"type": "string"
+				},
+				"matches": {
+					"type": "array",
+					"items": {
+						"schema": {
+							"$ref": "#/definitions/match_helper"
+						}
+					}
 				}
 			}
 		},
@@ -147,6 +185,46 @@
 				},
 				"winner_id": {
 					"type": "integer"
+				}
+			}
+		},
+		"match_helper": {
+			"properties": {
+				"match_id": {
+					"type": "integer"
+				},
+				"bracket_id": {
+					"type": "integer"
+				},
+				"round": {
+					"type": "integer"
+				},
+				"position": {
+					"type": "integer"
+				},
+				"player1_id": {
+					"type": "integer"
+				},
+				"player1_name": {
+					"type": "string"
+				},
+				"player2_id": {
+					"type": "integer"
+				},
+				"player2_name": {
+					"type": "string"
+				},
+				"seed1": {
+					"type": "integer"
+				},
+				"seed2": {
+					"type": "integer"
+				},
+				"winner_id": {
+					"type": "integer"
+				},
+				"winner_name": {
+					"type": "string"
 				}
 			}
 		}
