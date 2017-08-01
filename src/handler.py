@@ -25,6 +25,7 @@ def lambda_handler(event, context):
         elif resource == "/tournaments" and method == "GET":
             response_body = manager.get_tournaments()
         elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}" and method == "GET":
+            print("I'm here!")
             response_body = manager.get_bracket(path_parameters["bracketId"])
         else:
             raise ServiceException("Invalid path: '{} {}'".format(resource, method))
