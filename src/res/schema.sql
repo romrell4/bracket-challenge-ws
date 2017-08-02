@@ -24,10 +24,11 @@ CREATE TABLE tournaments (
 );
 
 CREATE TABLE brackets (
-  bracket_id    INT AUTO_INCREMENT,
+  bracket_id    INT                  AUTO_INCREMENT,
   user_id       INT,
   tournament_id INT         NOT NULL,
   name          VARCHAR(30) NOT NULL,
+  score         INT         NOT NULL DEFAULT 0,
 
   PRIMARY KEY (bracket_id),
 

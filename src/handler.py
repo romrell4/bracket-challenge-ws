@@ -11,6 +11,7 @@ def lambda_handler(event, context):
 
         resource, method = event["resource"], event["httpMethod"] # These will be used to specify which endpoint was being hit
         path_parameters = event["pathParameters"] # This will be used to get IDs and other parameters from the URL
+        query_parameters = event["queryParameters"]
         try:
             body = json.loads(event["body"]) # This will be used for most POSTs and PUTs
         except:
@@ -24,8 +25,12 @@ def lambda_handler(event, context):
             response_body = manager.login(fb_user)
         elif resource == "/tournaments" and method == "GET":
             response_body = manager.get_tournaments()
+        elif resource == "/tournaments/{tournamentId}/brackets" and method == "GET":
+            mine = "mine" in query_parameters and query_parameters["mine"] == "true"
+            response_body = manager.get_brackets(path_parameters["tournamentId"], mine)
         elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}" and method == "GET":
             response_body = manager.get_bracket(path_parameters["bracketId"])
+
         else:
             raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 

@@ -65,6 +65,51 @@
 				}
 			}
 		},
+		"/tournaments/{tournamentId}/brackets": {
+			"get": {
+				"summary": "Get all brackets in the specified tournament",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					},
+					{
+						"name": "mine",
+						"in": "query",
+						"required": false,
+						"type": "string"
+					}
+				]
+				"responses": {
+					"200": {
+						"description": "Brackets",
+						"schema": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bracket"
+							}
+						}
+					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
+				}
+			}
+		}
 		"/tournaments/{tournamentId}/brackets/{bracketId}": {
 			"get": {
 				"summary": "Get the specified bracket",

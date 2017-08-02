@@ -65,7 +65,7 @@ def get_tournaments():
     return get_list("SELECT * FROM tournaments", Tournament)
 
 def get_tournament(tournament_id):
-    return get_one("SELECT * FROM tournaments WHERE tournament_id = {}".format(tournament_id))
+    return get_one("SELECT * FROM tournaments WHERE tournament_id = {}".format(tournament_id), Tournament)
 
 def create_tournament(tournament):
     # TODO: Fix KeyError if master_bracket_id is not provided
@@ -82,20 +82,30 @@ def delete_tournament(tournament_id):
 
 ### BRACKETS ###
 
-def get_brackets():
-    return get_list("SELECT * FROM brackets", Bracket)
+def get_brackets(tournament_id, user_id):
+    sql = "SELECT * FROM brackets WHERE tournament_id = {}"
+    if user_id is not None:
+        sql += " AND user_id = {}"
+        sql = sql.format(tournament_id, user_id)
+    else:
+        sql = sql.format(tournament_id)
+    return get_list(sql, Bracket)
 
 def get_bracket(bracket_id):
     return get_one("SELECT * FROM brackets WHERE bracket_id = {}".format(bracket_id), Bracket)
 
 def create_bracket(bracket):
-    return None # TODO
+    # TODO: Fix KeyError if nullable objects are not provided
+    bracket_id = insert("""INSERT INTO brackets (user_id, tournament_id, name, score)
+                      VALUES ({}, {}, '{}', {})""".format(bracket["user_id"], bracket["tournament_id"], bracket["name"], bracket["score"]))
+    return get_bracket(bracket_id)
+
 
 def update_bracket(bracket_id, bracket):
     return None # TODO
 
 def delete_bracket(bracket_id):
-    return None # TODO
+    execute("DELETE FROM brackets WHERE bracket_id = {}".format(bracket_id))
 
 ### MATCHES ###
 
@@ -115,14 +125,23 @@ def get_matches(bracket_id):
         WHERE bracket_id = {}
         ORDER BY round, position""".format(bracket_id), MatchHelper)
 
+def get_match(match_id):
+    return get_one("SELECT * FROM matches WHERE match_id = {}".format(match_id), Match)
+
 def create_match(match):
-    return None # TODO
+    # TODO: Fix KeyError if nullable objects are not provided
+    match_id = insert("""INSERT INTO matches (bracket_id, round, position, player1_id, player2_id, seed1, seed2, winner_id)
+                      VALUES ({}, {}, {}, {}, {}, {}, {}, {})""".format(match["bracket_id"], match["round"], match["position"],
+                                                                        match["player1_id"], match["player2_id"],
+                                                                        match["seed1"], match["seed2"], match["winner_id"]))
+    return get_match(match_id)
+
 
 def update_match(match_id, match):
     return None # TODO
 
 def delete_match(match_id):
-    return None # TODO
+    execute("DELETE FROM matches WHERE match_id = {}".format(match_id))
 
 ### UTILS ###
 

@@ -22,6 +22,9 @@ class Manager:
     def get_tournaments(self):
         return da.get_tournaments()
 
+    def get_brackets(self, tournament_id, mine):
+        return da.get_brackets(tournament_id, self.user["user_id"] if mine else None)
+
     def get_bracket(self, bracket_id):
         bracket = da.get_bracket(bracket_id)
         bracket["rounds"] = self.get_rounds(bracket_id)

@@ -12,7 +12,7 @@ class Tournament:
 
 class Bracket:
     def __init__(self, result_set):
-        [self.bracket_id, self.user_id, self.tournament_id, self.name] = result_set
+        [self.bracket_id, self.user_id, self.tournament_id, self.name, self.score] = result_set
 
 class Match:
     def __init__(self, result_set):
