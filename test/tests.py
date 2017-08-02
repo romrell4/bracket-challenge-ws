@@ -18,11 +18,13 @@ EVENT = {
     "body": ""
 }
 
-def execute(resource, method = "GET", path_params = None, body = None):
+def execute(resource, method = "GET", path_params = None, query_params = None, body = None):
     EVENT["resource"] = resource
     EVENT["httpMethod"] = method
     if path_params is not None:
         EVENT["pathParameters"] = path_params
+    if query_params is not None:
+        EVENT["queryParameters"] = query_params
     if body is not None:
         EVENT["body"] = body
     return handler.lambda_handler(EVENT, None)
