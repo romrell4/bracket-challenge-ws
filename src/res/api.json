@@ -159,10 +159,13 @@
 				"name": {
 					"type": "string"
 				},
-				"matches": {
+				"rounds": {
 					"type": "array",
 					"items": {
-						"$ref": "#/definitions/matchhelper"
+						"type": "array",
+						"items": {
+							"$ref": "#/definitions/matchhelper"
+						}
 					}
 				}
 			}

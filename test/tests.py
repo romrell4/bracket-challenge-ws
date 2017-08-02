@@ -30,6 +30,9 @@ def execute(resource, method = "GET", path_params = None, body = None):
 def assert_success(response):
     assert response["statusCode"] < 300
 
+def get_body(response):
+    return json.loads(response["body"])
+
 class MyTest(unittest.TestCase):
     def test_login(self):
         # Register as a new user
@@ -39,7 +42,7 @@ class MyTest(unittest.TestCase):
         # Login as an existing user
         response = execute("/users", "POST")
         assert_success(response)
-        user_id = json.loads(response["body"])["user_id"]
+        user_id = get_body(response)["user_id"]
 
         # Delete user
         da.delete_user(user_id)
@@ -50,5 +53,8 @@ class MyTest(unittest.TestCase):
 
     def test_get_bracket(self):
         response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": 1, "bracketId": 3})
-        print(response)
         assert_success(response)
+        body = get_body(response)
+        print(json.dumps(body, indent = 4))
+        assert "rounds" in body
+        assert len(body["rounds"]) > 1
