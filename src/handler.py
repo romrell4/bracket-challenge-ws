@@ -10,8 +10,8 @@ def lambda_handler(event, context):
             raise ServiceException("Invalid request. No 'resource', or 'httpMethod' found in event", 400)
 
         resource, method = event["resource"], event["httpMethod"] # These will be used to specify which endpoint was being hit
-        path_parameters = event["pathParameters"] # This will be used to get IDs and other parameters from the URL
-        query_parameters = event["queryParameters"]
+        path_parameters = event["pathParameters"] if "pathParameters" in event else None # This will be used to get IDs and other parameters from the URL
+        query_parameters = event["queryParameters"] if "queryParameters" in event else None
         try:
             body = json.loads(event["body"]) # This will be used for most POSTs and PUTs
         except:

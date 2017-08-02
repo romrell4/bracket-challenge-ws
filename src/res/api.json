@@ -84,7 +84,7 @@
 						"required": false,
 						"type": "string"
 					}
-				]
+				],
 				"responses": {
 					"200": {
 						"description": "Brackets",
@@ -109,7 +109,7 @@
 					"type": "aws_proxy"
 				}
 			}
-		}
+		},
 		"/tournaments/{tournamentId}/brackets/{bracketId}": {
 			"get": {
 				"summary": "Get the specified bracket",
