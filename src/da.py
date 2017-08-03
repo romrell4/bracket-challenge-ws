@@ -20,97 +20,94 @@ except Exception as e:
 ### USERS ###
 
 def get_users():
-    return get_list("SELECT * FROM users", User)
+    return get_list(User, "SELECT * FROM users")
 
 def get_user(user_id):
-    return get_one("SELECT * FROM users WHERE user_id = {}".format(user_id), User)
+    return get_one(User, "SELECT * FROM users WHERE user_id = %s", user_id)
 
 def get_user_by_username(username):
-    return get_one("SELECT * FROM users WHERE username = '{}'".format(username), User)
+    return get_one(User, "SELECT * FROM users WHERE username = %s", username)
 
 def create_user(user):
-    user_id = insert("INSERT INTO users (username, name) VALUES ('{}', '{}')".format(user["username"], user["name"]))
+    user_id = insert("INSERT INTO users (username, name) VALUES (%s, %s)", user.get("username"), user.get("name"))
     return get_user(user_id)
 
 def update_user(user_id, user):
-    execute("UPDATE users SET username = '{}', name = '{}' WHERE user_id = {}".format(user["username"], user["name"], user_id))
+    execute("UPDATE users SET username = %s, name = %s WHERE user_id = %s", user.get("username"), user.get("name"), user_id)
     return get_user(user_id)
 
 def delete_user(user_id):
-    execute("DELETE FROM users WHERE user_id = {}".format(user_id))
+    execute("DELETE FROM users WHERE user_id = %s", user_id)
     return None
 
 ### PLAYERS ###
 
 def get_players():
-    return get_list("SELECT * FROM players", Player)
+    return get_list(Player, "SELECT * FROM players")
 
 def get_player(player_id):
-    return get_one("SELECT * FROM players WHERE player_id = {}".format(player_id), Player)
+    return get_one(Player, "SELECT * FROM players WHERE player_id = %s", player_id)
 
 def create_player(player):
-    player_id = insert("INSERT INTO players (name) VALUES ('{}')".format(player["name"]))
+    player_id = insert("INSERT INTO players (name) VALUES (%s)", player.get("name"))
     return get_player(player_id)
 
 def update_player(player_id, player):
-    execute("UPDATE players SET name = '{}' WHERE player_id = {}".format(player["name"], player_id))
+    execute("UPDATE players SET name = %s WHERE player_id = %s", player.get("name"), player_id)
     return get_player(player_id)
 
 def delete_player(player_id):
-    execute("DELETE FROM players WHERE player_id = {}".format(player_id))
+    execute("DELETE FROM players WHERE player_id = %s", player_id)
 
 ### TOURNAMENTS ###
 
 def get_tournaments():
-    return get_list("SELECT * FROM tournaments", Tournament)
+    return get_list(Tournament, "SELECT * FROM tournaments")
 
 def get_tournament(tournament_id):
-    return get_one("SELECT * FROM tournaments WHERE tournament_id = {}".format(tournament_id), Tournament)
+    return get_one(Tournament, "SELECT * FROM tournaments WHERE tournament_id = %s", tournament_id)
 
 def create_tournament(tournament):
-    # TODO: Fix KeyError if master_bracket_id is not provided
-    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id) VALUES ('{}', {})".format(tournament["name"], tournament["master_bracket_id"]))
+    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id) VALUES (%s, %s)", tournament.get("name"), tournament.get("master_bracket_id"))
     return get_tournament(tournament_id)
 
 def update_tournament(tournament_id, tournament):
-    # TODO: Fix KeyError if master_bracket_id is not provided
-    execute("UPDATE tournaments SET name = '{}', master_bracket_id = {} WHERE tournament_id = {}".format(tournament["name"], tournament["master_bracket_id"], tournament_id))
+    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s WHERE tournament_id = %s", tournament.get("name"), tournament.get("master_bracket_id"), tournament_id)
     return get_tournament(tournament_id)
 
 def delete_tournament(tournament_id):
-    execute("DELETE FROM tournaments WHERE tournament_id = {}".format(tournament_id))
+    execute("DELETE FROM tournaments WHERE tournament_id = %s", tournament_id)
 
 ### BRACKETS ###
 
 def get_brackets(tournament_id, user_id):
-    sql = "SELECT * FROM brackets WHERE tournament_id = {}"
+    sql = "SELECT * FROM brackets WHERE tournament_id = %s"
+    args = [tournament_id]
     if user_id is not None:
-        sql += " AND user_id = {}"
-        sql = sql.format(tournament_id, user_id)
-    else:
-        sql = sql.format(tournament_id)
-    return get_list(sql, Bracket)
+        sql += " AND user_id = %s"
+        args.append(user_id)
+    return get_list(Bracket, sql, *args)
 
 def get_bracket(bracket_id):
-    return get_one("SELECT * FROM brackets WHERE bracket_id = {}".format(bracket_id), Bracket)
+    return get_one(Bracket, "SELECT * FROM brackets WHERE bracket_id = %s", bracket_id)
 
 def create_bracket(bracket):
-    # TODO: Fix KeyError if nullable objects are not provided
-    bracket_id = insert("""INSERT INTO brackets (user_id, tournament_id, name, score)
-                      VALUES ({}, {}, '{}', {})""".format(bracket["user_id"], bracket["tournament_id"], bracket["name"], bracket["score"]))
+    bracket_id = insert("INSERT INTO brackets (user_id, tournament_id, name, score) VALUES (%s, %s, %s, %s)",
+                        bracket.get("user_id"), bracket.get("tournament_id"), bracket.get("name"), bracket.get("score"))
     return get_bracket(bracket_id)
 
-
 def update_bracket(bracket_id, bracket):
-    return None # TODO
+    execute("UPDATE brackets SET user_id = %s, tournament_id = %s, name = %s, score = %s WHERE bracket_id = %s",
+            bracket.get("user_id"), bracket.get("tournament_id"), bracket.get("name"), bracket.get("score"), bracket_id)
+    return get_bracket(bracket_id)
 
 def delete_bracket(bracket_id):
-    execute("DELETE FROM brackets WHERE bracket_id = {}".format(bracket_id))
+    execute("DELETE FROM brackets WHERE bracket_id = %s", bracket_id)
 
 ### MATCHES ###
 
 def get_matches(bracket_id):
-    return get_list("""
+    return get_list(MatchHelper, """
         SELECT m.match_id, m.bracket_id, m.round, m.position,
           m.player1_id, p1.name as player1_name,
           m.player2_id, p2.name as player2_name,
@@ -122,33 +119,31 @@ def get_matches(bracket_id):
           on m.player2_id = p2.player_id
         LEFT JOIN players w
           on m.winner_id = w.player_id
-        WHERE bracket_id = {}
-        ORDER BY round, position""".format(bracket_id), MatchHelper)
+        WHERE bracket_id = %s
+        ORDER BY round, position""", bracket_id)
 
 def get_match(match_id):
-    return get_one("SELECT * FROM matches WHERE match_id = {}".format(match_id), Match)
+    return get_one(Match, "SELECT * FROM matches WHERE match_id = %s", match_id)
 
 def create_match(match):
-    # TODO: Fix KeyError if nullable objects are not provided
-    match_id = insert("""INSERT INTO matches (bracket_id, round, position, player1_id, player2_id, seed1, seed2, winner_id)
-                      VALUES ({}, {}, {}, {}, {}, {}, {}, {})""".format(match["bracket_id"], match["round"], match["position"],
-                                                                        match["player1_id"], match["player2_id"],
-                                                                        match["seed1"], match["seed2"], match["winner_id"]))
+    match_id = insert("INSERT INTO matches (bracket_id, round, position, player1_id, player2_id, seed1, seed2, winner_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                      match.get("bracket_id"), match.get("round"), match.get("position"), match.get("player1_id"), match.get("player2_id"), match.get("seed1"), match.get("seed2"), match.get("winner_id"))
     return get_match(match_id)
 
-
 def update_match(match_id, match):
-    return None # TODO
+    execute("UPDATE matches SET bracket_id = %s, round = %s, position = %s, player1_id = %s, player2_id = %s, seed1 = %s, seed2 = %s, winner_id = %s where match_id = %s",
+            match.get("bracket_id"), match.get("round"), match.get("position"), match.get("player1_id"), match.get("player2_id"), match.get("seed1"), match.get("seed2"), match.get("winner_id"), match_id)
+    return get_match(match_id)
 
 def delete_match(match_id):
-    execute("DELETE FROM matches WHERE match_id = {}".format(match_id))
+    execute("DELETE FROM matches WHERE match_id = %s", match_id)
 
 ### UTILS ###
 
-def get_list(sql, klass):
+def get_list(klass, sql, *args):
     try:
         with conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, args)
             results = []
             for row in cur.fetchall():
                 results.append(klass(row).__dict__)
@@ -157,10 +152,10 @@ def get_list(sql, klass):
         print(e)
         raise ServiceException("Error getting data from database")
 
-def get_one(sql, klass):
+def get_one(klass, sql, *args):
     try:
         with conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, args)
             result = cur.fetchone()
             if result is not None:
                 return klass(result).__dict__
@@ -169,19 +164,19 @@ def get_one(sql, klass):
         print(e)
         raise ServiceException("Error getting data from database")
 
-def insert(sql):
+def insert(sql, *args):
     try:
         with conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, args)
             return cur.lastrowid
     except Exception as e:
         print(e)
         raise ServiceException("Error inserting data into database")
 
-def execute(sql):
+def execute(sql, *args):
     try:
         with conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, args)
     except Exception as e:
         print(e)
         raise ServiceException("Error executing database command")
