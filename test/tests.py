@@ -27,7 +27,7 @@ def execute(resource, method = "GET", path_params = None, query_params = None, b
     if path_params is not None:
         EVENT["pathParameters"] = path_params
     if query_params is not None:
-        EVENT["queryParameters"] = query_params
+        EVENT["queryStringParameters"] = query_params
     if body is not None:
         EVENT["body"] = body
     return handler.lambda_handler(EVENT, None)
@@ -39,6 +39,15 @@ def get_body(response):
     return json.loads(response["body"])
 
 class MyTest(unittest.TestCase):
+    def setUp(self):
+        # Log in the test user
+        execute("/users", "POST")
+
+        # Log in the admin user, and change back to the test account
+        EVENT["headers"]["Token"] = properties.admin_token
+        execute("/users", "POST")
+        EVENT["headers"]["Token"] = properties.test_token
+
     def test_login(self):
         # Register as a new user
         response = execute("/users", "POST")
