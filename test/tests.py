@@ -40,15 +40,12 @@ def get_body(response):
 
 class MyTest(unittest.TestCase):
     def setUp(self):
-        # Log in the test user
-        execute("/users", "POST")
-
-        # Log in the admin user, and change back to the test account
-        EVENT["headers"]["Token"] = properties.admin_token
-        execute("/users", "POST")
-        EVENT["headers"]["Token"] = properties.test_token
+        da.create_user({"username": "test_fqxpeow_user@tfbnw.net", "name": "Test User"})
 
     def test_login(self):
+        user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
+        da.delete_user(user["user_id"])
+
         # Register as a new user
         response = execute("/users", "POST")
         assert_success(response)
@@ -56,10 +53,6 @@ class MyTest(unittest.TestCase):
         # Login as an existing user
         response = execute("/users", "POST")
         assert_success(response)
-        user_id = get_body(response)["user_id"]
-
-        # Delete user
-        da.delete_user(user_id)
 
     def test_get_tournaments(self):
         response = execute("/tournaments")
@@ -112,6 +105,8 @@ class MyTest(unittest.TestCase):
             da.delete_bracket(bracket1["bracket_id"])
             da.delete_bracket(bracket2["bracket_id"])
             da.delete_user(other_user["user_id"])
-            da.delete_user(user_id)
             da.delete_tournament(tournament["tournament_id"])
 
+    def tearDown(self):
+        user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
+        da.delete_user(user["user_id"])
