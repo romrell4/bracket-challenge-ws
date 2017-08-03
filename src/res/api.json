@@ -164,6 +164,9 @@
 				},
 				"name": {
 					"type": "string"
+				},
+				"admin": {
+					"type": "integer"
 				}
 			}
 		},
