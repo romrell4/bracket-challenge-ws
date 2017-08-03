@@ -106,6 +106,3 @@ class MyTest(unittest.TestCase):
             da.delete_user(user_id)
             da.delete_tournament(tournament["tournament_id"])
 
-    def test_create_bracket(self):
-
-
