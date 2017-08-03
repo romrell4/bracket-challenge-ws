@@ -19,15 +19,38 @@ class DaTest(unittest.TestCase):
         self.run_simple_tests(da.get_tournaments, da.create_tournament, da.update_tournament, da.delete_tournament, "tournament_id", dict1, dict2)
 
     def test_brackets(self):
-        dict1 = {"user_id": 0, "tournament_id": 0, ""}
-        dict2 = {""}
-        self.run_simple_tests(da.get_brackets, da.create_bracket, da.update_bracket, da.delete_bracket, "bracket_id", dict1, dict2)
+        tournament = da.create_tournament({"name": "Test"})
+        user = da.create_user({"username": "test", "name": "test"})
+        dict1 = {"user_id": user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 0}
+        dict2 = {"user_id": user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test2", "score": 0}
+        self.run_simple_tests(None, da.create_bracket, da.update_bracket, da.delete_bracket, "bracket_id", dict1, dict2)
+        da.delete_tournament(tournament["tournament_id"])
+        da.delete_user(user["user_id"])
+
+    def test_matches(self):
+        tournament = da.create_tournament({"name": "test"})
+        user = da.create_user({"username": "test", "name": "test"})
+        bracket = da.create_bracket({"user_id": user["user_id"], "tournament_id": tournament["tournament_id"],
+                                     "name": "test", "score": 20})
+        player1 = da.create_player({"name": "test player1"})
+        player2 = da.create_player({"name": "test player2"})
+        dict1 = {"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
+                 "player2_id": player2["player_id"], "seed1": 1, "winner_id": player1["player_id"]}
+        dict2 = {"bracket_id": bracket["bracket_id"], "round": 1, "position": 2, "player1_id": player1["player_id"],
+                 "player2_id": player2["player_id"], "seed1": 1, "winner_id": player1["player_id"]}
+        self.run_simple_tests(None, da.create_match, da.update_match, da.delete_match, "match_id", dict1, dict2)
+        da.delete_player(player1["player_id"])
+        da.delete_player(player2["player_id"])
+        da.delete_bracket(bracket["bracket_id"])
+        da.delete_user(user["user_id"])
+        da.delete_tournament(tournament["tournament_id"])
 
     @staticmethod
     def run_simple_tests(get_all, create, update, delete, id_key, create_dict, update_dict):
         # Test get all
-        objs = get_all()
-        assert objs is not None
+        if get_all is not None:
+            objs = get_all()
+            assert objs is not None
 
         # Test create (which also tests get)
         obj = create(create_dict)
