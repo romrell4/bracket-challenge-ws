@@ -1,6 +1,6 @@
 class User:
     def __init__(self, result_set):
-        [self.user_id, self.username, self.name] = result_set
+        [self.user_id, self.username, self.name, self.admin] = result_set
 
 class Player:
     def __init__(self, result_set):
