@@ -11,7 +11,7 @@ def lambda_handler(event, context):
 
         resource, method = event["resource"], event["httpMethod"] # These will be used to specify which endpoint was being hit
         path_parameters = event["pathParameters"] if "pathParameters" in event else {} # This will be used to get IDs and other parameters from the URL
-        query_parameters = event["queryParameters"] if "queryParameters" in event else {}
+        query_parameters = event["queryStringParameters"] if "queryStringParameters" in event else {}
         try:
             body = json.loads(event["body"]) # This will be used for most POSTs and PUTs
         except:
@@ -21,8 +21,12 @@ def lambda_handler(event, context):
 
         manager = Manager(fb_user["email"])
 
+        # Find the endpoint they are hitting, and process the request
         if resource == "/users" and method == "POST":
             response_body = manager.login(fb_user)
+        elif manager.user is None:
+            # If this user isn't in our database, they are only allowed to use the login endpoint
+            raise ServiceException("This user is not tracked in our database. The only allowed endpoint is /users POST to create an account.", 403)
         elif resource == "/tournaments" and method == "GET":
             response_body = manager.get_tournaments()
         elif resource == "/tournaments/{tournamentId}/brackets" and method == "GET":
@@ -30,7 +34,6 @@ def lambda_handler(event, context):
             response_body = manager.get_brackets(path_parameters["tournamentId"], mine)
         elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}" and method == "GET":
             response_body = manager.get_bracket(path_parameters["bracketId"])
-
         else:
             raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 
