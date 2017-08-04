@@ -178,7 +178,7 @@ class MyTest(unittest.TestCase):
             assert response["statusCode"] == 412
 
         finally:
-            da.delete_tournament(tournament["tournament_id"])
+            da.delete_tournament(tournament_id)
 
     def tearDown(self):
         user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
