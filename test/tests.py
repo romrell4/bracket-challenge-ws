@@ -4,6 +4,7 @@ import json
 import handler
 import da
 
+from service_exception import ServiceException
 from res import properties
 
 EVENT = {
@@ -40,7 +41,10 @@ def get_body(response):
 
 class MyTest(unittest.TestCase):
     def setUp(self):
-        da.create_user({"username": "test_fqxpeow_user@tfbnw.net", "name": "Test User"})
+        try:
+            da.create_user({"username": "test_fqxpeow_user@tfbnw.net", "name": "Test User"})
+        except ServiceException:
+            pass
 
     def test_login(self):
         user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
@@ -104,37 +108,74 @@ class MyTest(unittest.TestCase):
             da.delete_user(other_user["user_id"])
             da.delete_tournament(tournament["tournament_id"])
 
-    def _test_create_bracket(self):
+    def test_create_bracket(self):
+        bracket = {"name": "Master", "rounds": [
+            [
+                {
+                    "round": 1,
+                    "position": 1,
+                    "player1_id": 1,
+                    "player2_id": 2
+                },
+                {
+                    "round": 1,
+                    "position": 2,
+                    "player1_id": 3,
+                    "player2_id": 4
+                }
+            ],
+            [
+                {
+                    "round": 2,
+                    "position": 1
+                },
+            ]
+        ]}
+
         # Invalid tournamentId
-        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0})
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0}, body = json.dumps(bracket))
         assert response["statusCode"] == 400
 
         # Test without Admin privileges (creating a master bracket)
         tournament = da.create_tournament({"name": "Test"})
-        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament["tournament_id"]})
+        tournament_id = tournament["tournament_id"]
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
         assert response["statusCode"] == 403
 
         # test with Admin privileges
         EVENT["headers"]["Token"] = properties.admin_token
-        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament["tournament_id"]})
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
         assert_success(response)
-        tournament = da.get_tournament(tournament["tournament_id"])
+        tournament = da.get_tournament(tournament_id)
         master_id = tournament["master_bracket_id"]
         assert master_id is not None
         master_bracket = da.get_bracket(master_id)
-        assert len(master_bracket) == 1
+        assert master_bracket is not None
+        assert master_bracket["name"] != bracket["name"]
 
         EVENT["headers"]["Token"] = properties.test_token
 
         # test with master
-        response = execute("tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament["tournament_id"]})
+        bracket = {"name": "test"}
+
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
         assert_success(response)
         user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
-        bracket = da.get_brackets(tournament["tournament_id"], user["user_id"])
-        assert bracket == master_bracket
+        user_brackets = da.get_brackets(tournament_id, user["user_id"])
+        assert len(user_brackets) == 1
+        bracket = user_brackets[0]
+        user_matches = da.get_matches(bracket["bracket_id"])
+        master_id = da.get_tournament(tournament_id)["master_bracket_id"]
+        master_matches = da.get_matches(master_id)
+        assert len(user_matches) == len(master_matches)
+        for (user_match, master_match) in zip(user_matches, master_matches):
+            assert user_match["player1_id"] == master_match["player1_id"] and user_match["player2_id"] == master_match["player2_id"] \
+                   and user_match["round"] == master_match["round"] and user_match["position"] == master_match["position"]
 
-        da.delete_bracket(bracket["bracket_id"])
-        da.delete_bracket(master_bracket["bracket_id"])
+        # test with preexisting bracket
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
+        assert response["statusCode"] == 412
+
         da.delete_tournament(tournament["tournament_id"])
 
     def tearDown(self):
