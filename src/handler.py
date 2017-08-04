@@ -32,6 +32,8 @@ def lambda_handler(event, context):
         elif resource == "/tournaments/{tournamentId}/brackets" and method == "GET":
             mine = "mine" in query_parameters and query_parameters["mine"] == "true"
             response_body = manager.get_brackets(path_parameters["tournamentId"], mine)
+        elif resource == "/tournaments/{tournamentId}/brackets" and method == "POST":
+            response_body = manager.create_bracket(path_parameters["tournamentId"], body)
         elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}" and method == "GET":
             response_body = manager.get_bracket(path_parameters["bracketId"])
         else:

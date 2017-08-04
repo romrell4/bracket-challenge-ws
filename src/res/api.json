@@ -108,6 +108,68 @@
 					"contentHandling": "CONVERT_TO_TEXT",
 					"type": "aws_proxy"
 				}
+			},
+			"post": {
+				"summary": "Create a new bracket in the specified tournament",
+				"produces": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/definitions/bracket"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Bracket",
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					},
+					"400": {
+						"description": "Invalid tournamentId",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					},
+					"403": {
+						"description": "Non-admin trying to create master bracket",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					},
+					"412": {
+						"description": "Trying to create more than one bracket",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
+				}
+
 			}
 		},
 		"/tournaments/{tournamentId}/brackets/{bracketId}": {
@@ -285,6 +347,13 @@
 					"type": "integer"
 				},
 				"winner_name": {
+					"type": "string"
+				}
+			}
+		},
+		"error": {
+			"properties": {
+				"error": {
 					"type": "string"
 				}
 			}
