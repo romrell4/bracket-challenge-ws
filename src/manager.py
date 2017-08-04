@@ -91,3 +91,4 @@ class Manager:
                 match["bracket_id"] = new_bracket["bracket_id"]
                 da.create_match(match)
         return new_bracket["bracket_id"]
+    
