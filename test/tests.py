@@ -74,14 +74,12 @@ class MyTest(unittest.TestCase):
         response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": 0})
         assert_success(response)
         assert len(get_body(response)) == 0
-        print(response)
 
         # empty tournament
         tournament = da.create_tournament({"name": "test", "master_bracket_id": 0})
         response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
         assert_success(response)
         assert len(get_body(response)) == 0
-        print(response)
 
         # non empty tournament
         response = execute("/users", "POST")
@@ -94,18 +92,50 @@ class MyTest(unittest.TestCase):
             response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
             assert_success(response)
             assert len(get_body(response)) == 2
-            print(response)
 
             # With valid userId
             response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]}, query_params = {"mine": "true"})
             assert_success(response)
             assert len(get_body(response)) == 1
-            print(response)
+
         finally:
             da.delete_bracket(bracket1["bracket_id"])
             da.delete_bracket(bracket2["bracket_id"])
             da.delete_user(other_user["user_id"])
             da.delete_tournament(tournament["tournament_id"])
+
+    def _test_create_bracket(self):
+        # Invalid tournamentId
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0})
+        assert response["statusCode"] == 400
+
+        # Test without Admin privileges (creating a master bracket)
+        tournament = da.create_tournament({"name": "Test"})
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament["tournament_id"]})
+        assert response["statusCode"] == 403
+
+        # test with Admin privileges
+        EVENT["headers"]["Token"] = properties.admin_token
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament["tournament_id"]})
+        assert_success(response)
+        tournament = da.get_tournament(tournament["tournament_id"])
+        master_id = tournament["master_bracket_id"]
+        assert master_id is not None
+        master_bracket = da.get_bracket(master_id)
+        assert len(master_bracket) == 1
+
+        EVENT["headers"]["Token"] = properties.test_token
+
+        # test with master
+        response = execute("tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament["tournament_id"]})
+        assert_success(response)
+        user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
+        bracket = da.get_brackets(tournament["tournament_id"], user["user_id"])
+        assert bracket == master_bracket
+
+        da.delete_bracket(bracket["bracket_id"])
+        da.delete_bracket(master_bracket["bracket_id"])
+        da.delete_tournament(tournament["tournament_id"])
 
     def tearDown(self):
         user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")

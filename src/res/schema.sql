@@ -40,7 +40,7 @@ CREATE TABLE brackets (
   INDEX tournament_id_index (tournament_id),
   FOREIGN KEY (tournament_id)
   REFERENCES tournaments (tournament_id)
-    ON DELETE RESTRICT
+    ON DELETE CASCADE
 );
 
 CREATE TABLE matches (
@@ -59,7 +59,7 @@ CREATE TABLE matches (
   INDEX bracket_id_index (bracket_id),
   FOREIGN KEY (bracket_id)
   REFERENCES brackets (bracket_id)
-    ON DELETE RESTRICT,
+    ON DELETE CASCADE,
 
   INDEX player1_id_index (player1_id),
   FOREIGN KEY (player1_id)
