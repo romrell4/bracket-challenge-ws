@@ -19,25 +19,23 @@ class DaTest(unittest.TestCase):
         self.run_simple_tests(da.get_tournaments, da.create_tournament, da.update_tournament, da.delete_tournament, "tournament_id", dict1, dict2)
 
     def test_brackets(self):
-        tournament = da.create_tournament({"name": "Test"})
+        tournament = da.create_tournament({"name": "test"})
         user1 = da.create_user({"username": "test", "name": "test"})
         user2 = da.create_user({"username": "test2", "name": "test2"})
-        dict1 = {"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 0}
-        dict2 = {"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test2", "score": 0}
-        self.run_simple_tests(None, da.create_bracket, da.update_bracket, da.delete_bracket, "bracket_id", dict1, dict2)
-
-        # Testing the get_brackets method
-        bracket1 = da.create_bracket({"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 0})
-        bracket2 = da.create_bracket({"user_id": user2["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 0})
         try:
+            dict1 = {"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"}
+            dict2 = {"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test2"}
+            self.run_simple_tests(None, da.create_bracket, da.update_bracket, da.delete_bracket, "bracket_id", dict1, dict2)
+
+            # Testing the get_brackets method
+            da.create_bracket({"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
+            da.create_bracket({"user_id": user2["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
             brackets = da.get_brackets(tournament["tournament_id"], None)
             assert len(brackets) == 2
             bracket = da.get_brackets(tournament["tournament_id"], user1["user_id"])
             assert len(bracket) == 1
 
         finally:
-            da.delete_bracket(bracket1["bracket_id"])
-            da.delete_bracket(bracket2["bracket_id"])
             da.delete_tournament(tournament["tournament_id"])
             da.delete_user(user1["user_id"])
             da.delete_user(user2["user_id"])
@@ -45,31 +43,27 @@ class DaTest(unittest.TestCase):
     def test_matches(self):
         tournament = da.create_tournament({"name": "test"})
         user = da.create_user({"username": "test", "name": "test"})
-        bracket = da.create_bracket({"user_id": user["user_id"], "tournament_id": tournament["tournament_id"],
-                                     "name": "test", "score": 20})
-        player1 = da.create_player({"name": "test player1"})
-        player2 = da.create_player({"name": "test player2"})
-        dict1 = {"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
-                 "player2_id": player2["player_id"], "seed1": 1, "winner_id": player1["player_id"]}
-        dict2 = {"bracket_id": bracket["bracket_id"], "round": 1, "position": 2, "player1_id": player1["player_id"],
-                 "player2_id": player2["player_id"], "seed1": 1, "winner_id": player1["player_id"]}
-        self.run_simple_tests(None, da.create_match, da.update_match, da.delete_match, "match_id", dict1, dict2)
-
-        # Testing get all matches
-        match = da.create_match({"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
-                                 "seed1": 1, "winner_id": player1["player_id"]})
         try:
+            bracket = da.create_bracket({"user_id": user["user_id"], "tournament_id": tournament["tournament_id"],
+                                         "name": "test", "score": 20})
+            player1 = da.create_player({"name": "test player1"})
+            player2 = da.create_player({"name": "test player2"})
+            dict1 = {"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
+                     "player2_id": player2["player_id"], "seed1": 1, "winner_id": player1["player_id"]}
+            dict2 = {"bracket_id": bracket["bracket_id"], "round": 1, "position": 2, "player1_id": player1["player_id"],
+                     "player2_id": player2["player_id"], "seed1": 1, "winner_id": player1["player_id"]}
+            self.run_simple_tests(None, da.create_match, da.update_match, da.delete_match, "match_id", dict1, dict2)
+
+            # Testing get all matches
+            da.create_match({"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
+                                     "seed1": 1, "winner_id": player1["player_id"]})
             matches = da.get_matches(bracket["bracket_id"])
             assert matches is not None
             assert len(matches) == 1
 
         finally:
-            da.delete_match(match["match_id"])
-            da.delete_player(player1["player_id"])
-            da.delete_player(player2["player_id"])
-            da.delete_bracket(bracket["bracket_id"])
-            da.delete_user(user["user_id"])
             da.delete_tournament(tournament["tournament_id"])
+            da.delete_user(user["user_id"])
 
     @staticmethod
     def run_simple_tests(get_all, create, update, delete, id_key, create_dict, update_dict):

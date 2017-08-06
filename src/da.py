@@ -92,8 +92,18 @@ def get_bracket(bracket_id):
     return get_one(Bracket, "SELECT * FROM brackets WHERE bracket_id = %s", bracket_id)
 
 def create_bracket(bracket):
-    bracket_id = insert("INSERT INTO brackets (user_id, tournament_id, name, score) VALUES (%s, %s, %s, %s)",
-                        bracket.get("user_id"), bracket.get("tournament_id"), bracket.get("name"), bracket.get("score"))
+    # Need to check if the score exists. If it doesn't, we default it to zero in the database
+    has_score = "score" in bracket and bracket["score"] is not None
+    sql = "INSERT INTO brackets (user_id, tournament_id, name{}) VALUES (%s, %s, %s{})"
+    args = [bracket.get("user_id"), bracket.get("tournament_id"), bracket.get("name")]
+
+    if has_score:
+        sql = sql.format(", score", ", %s")
+        args.append(bracket.get("score"))
+    else:
+        sql = sql.format("", "")
+
+    bracket_id = insert(sql, *args)
     return get_bracket(bracket_id)
 
 def update_bracket(bracket_id, bracket):
