@@ -70,10 +70,8 @@ class MyTest(unittest.TestCase):
         da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 2, "player1_id": 3, "player2_id": 4})
         da.create_match({"bracket_id": bracket1_id, "round": 2, "position": 1})
 
-        tournament2 = da.create_tournament({"name": "test_full"})
-        tournament2_id = tournament2["tournament_id"]
-        bracket2 = da.create_bracket({"name": "test2", "tournament_id": tournament2_id})
-        bracket2_id = bracket2["bracket_id"]
+        tournament2_id = da.create_tournament({"name": "test_full"})["tournament_id"]
+        bracket2_id = da.create_bracket({"name": "test2", "tournament_id": tournament2_id})["bracket_id"]
 
         # change this number to change the size of a new tournament
         rounds = 3
