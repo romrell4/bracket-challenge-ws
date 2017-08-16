@@ -63,6 +63,57 @@
 					"contentHandling": "CONVERT_TO_TEXT",
 					"type": "aws_proxy"
 				}
+			},
+			"post": {
+				"summary": "Create a new tournament",
+				"produces": [
+					"application/json"
+				],
+				"consumes": [
+					"application/json"
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/definitions/tournament"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Tournament",
+						"schema": {
+							"$ref": "#/definitions/tournament"
+						}
+					},
+					"400": {
+						"description": "No body",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					},
+					"403": {
+						"description": "User does not have permission to create a new tournament",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
+				}
+
 			}
 		},
 		"/tournaments/{tournamentId}/brackets": {
@@ -106,6 +157,9 @@
 			"post": {
 				"summary": "Create a new bracket in the specified tournament",
 				"produces": [
+					"application/json"
+				],
+				"consumes": [
 					"application/json"
 				],
 				"parameters": [

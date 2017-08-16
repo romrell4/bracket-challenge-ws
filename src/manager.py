@@ -22,32 +22,40 @@ class Manager:
     def get_tournaments(self):
         return da.get_tournaments()
 
+    def create_tournament(self, tournament):
+        # Check for a tournament
+        if tournament is None:
+            raise ServiceException("No tournament passed in to create", 400)
+        # Check if user is an admin
+        if self.user["admin"] == 0:
+            raise ServiceException("You do not have permission to create a tournament", 403)
+        return da.create_tournament(tournament)
+
+
     def get_brackets(self, tournament_id):
         return da.get_brackets(tournament_id)
 
     def create_bracket(self, tournament_id, bracket):
         tournament = da.get_tournament(tournament_id)
-
+        # TODO: Add a condition for if they do not pass in anything
         # Check that the tournament exists
         if tournament is None:
             raise ServiceException("This tournament does not exist.", 400)
 
         # Check master bracket exists
         if tournament["master_bracket_id"] is None:
+            # If the user is not an admin do not allow them to create the master
+            if self.user["admin"] == 0:
+                raise ServiceException("You do not have permission to create this bracket", 403)
+
+            # TODO: Think about auto generating empty matches
 
             # If user is an admin allow them to create the master bracket
-            if self.user["admin"] == 1:
-
-                # TODO: Think about auto generating empty matches
-
-                bracket_to_create = {"tournament_id": tournament["tournament_id"], "name": tournament["name"] + " - Results"}
-                new_bracket_id = self.create_and_fill_bracket(bracket_to_create, bracket)
-                tournament["master_bracket_id"] = new_bracket_id
-                da.update_tournament(tournament["tournament_id"], tournament)
-                return self.get_bracket(new_bracket_id)
-            # If the user is not an admin do not allow them to create the master
-            else:
-                raise ServiceException("You do not have permission to create this bracket", 403)
+            bracket_to_create = {"tournament_id": tournament["tournament_id"], "name": tournament["name"] + " - Results"}
+            new_bracket_id = self.create_and_fill_bracket(bracket_to_create, bracket)
+            tournament["master_bracket_id"] = new_bracket_id
+            da.update_tournament(tournament["tournament_id"], tournament)
+            return self.get_bracket(new_bracket_id)
 
         # See if the user already has a bracket
         if da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"]) is not None:

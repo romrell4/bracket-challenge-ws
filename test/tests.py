@@ -23,15 +23,12 @@ EVENT = {
     "body": ""
 }
 
-def execute(resource, method = "GET", path_params = None, query_params = None, body = None):
+def execute(resource, method = "GET", path_params = {}, query_params = {}, body = ""):
     EVENT["resource"] = resource
     EVENT["httpMethod"] = method
-    if path_params is not None:
-        EVENT["pathParameters"] = path_params
-    if query_params is not None:
-        EVENT["queryStringParameters"] = query_params
-    if body is not None:
-        EVENT["body"] = body
+    EVENT["pathParameters"] = path_params
+    EVENT["queryStringParameters"] = query_params
+    EVENT["body"] = body
     return handler.lambda_handler(EVENT, None)
 
 def assert_success(response):
@@ -61,6 +58,28 @@ class MyTest(unittest.TestCase):
     def test_get_tournaments(self):
         response = execute("/tournaments")
         assert_success(response)
+
+    def test_create_tournament(self):
+        tournament = {"name": "Test"}
+        # testing a nonadmin user trying to create a tournament
+        response = execute("/tournaments", "POST", body = json.dumps(tournament))
+        assert response["statusCode"] == 403
+
+        # testing an admin trying to create a tournament without a body
+        EVENT["headers"]["Token"] = properties.admin_token
+        response = execute("/tournaments", "POST")
+        assert response["statusCode"] == 400
+
+        # testing an admin creating a valid tournament
+        response = execute("/tournaments", "POST", body = json.dumps(tournament))
+        body = get_body(response)
+        try:
+            assert_success(response)
+            assert len(body) > 0
+
+        finally:
+            EVENT["headers"]["Token"] = properties.test_token
+            da.delete_tournament(body["tournament_id"])
 
     def test_get_my_bracket(self):
         tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
