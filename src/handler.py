@@ -29,6 +29,8 @@ def lambda_handler(event, context):
             raise ServiceException("This user is not tracked in our database. The only allowed endpoint is /users POST to create an account.", 403)
         elif resource == "/tournaments" and method == "GET":
             response_body = manager.get_tournaments()
+        elif resource == "/tournaments" and method == "POST":
+            response_body = manager.create_tournament(body)
         elif resource == "/tournaments/{tournamentId}/brackets" and method == "GET":
             response_body = manager.get_brackets(path_parameters["tournamentId"])
         elif resource == "/tournaments/{tournamentId}/brackets" and method == "POST":
