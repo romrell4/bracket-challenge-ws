@@ -22,8 +22,8 @@ class Manager:
     def get_tournaments(self):
         return da.get_tournaments()
 
-    def get_brackets(self, tournament_id, mine):
-        return da.get_brackets(tournament_id, self.user["user_id"] if mine else None)
+    def get_brackets(self, tournament_id):
+        return da.get_brackets(tournament_id)
 
     def create_bracket(self, tournament_id, bracket):
         tournament = da.get_tournament(tournament_id)
@@ -50,7 +50,7 @@ class Manager:
                 raise ServiceException("You do not have permission to create this bracket", 403)
 
         # See if the user already has a bracket
-        if len(da.get_brackets(tournament_id, self.user["user_id"])) != 0:
+        if da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"]) is not None:
             raise ServiceException("You have already created a bracket", 412)
 
         # create the users bracket
@@ -58,6 +58,13 @@ class Manager:
         master = self.get_bracket(tournament["master_bracket_id"])
         new_bracket_id = self.create_and_fill_bracket(bracket_to_create, master)
         return self.get_bracket(new_bracket_id)
+
+    def get_my_bracket(self, tournament_id):
+        bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
+        if bracket is None:
+            raise ServiceException("No bracket existed for user_id: {} in tournament_id: {}".format(tournament_id, self.user["user_id"]), 404)
+        bracket["rounds"] = self.get_rounds(bracket["bracket_id"])
+        return bracket
 
     def get_bracket(self, bracket_id):
         bracket = da.get_bracket(bracket_id)

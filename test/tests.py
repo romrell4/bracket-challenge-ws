@@ -42,13 +42,12 @@ def get_body(response):
 class MyTest(unittest.TestCase):
     def setUp(self):
         try:
-            da.create_user({"username": "test_fqxpeow_user@tfbnw.net", "name": "Test User"})
+            self.user = da.create_user({"username": "test_fqxpeow_user@tfbnw.net", "name": "Test User"})
         except ServiceException:
-            pass
+            self.user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
 
     def test_login(self):
-        user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
-        da.delete_user(user["user_id"])
+        da.delete_user(self.user["user_id"])
 
         # Register as a new user
         response = execute("/users", "POST")
@@ -61,6 +60,25 @@ class MyTest(unittest.TestCase):
     def test_get_tournaments(self):
         response = execute("/tournaments")
         assert_success(response)
+
+    def test_get_my_bracket(self):
+        tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
+        try:
+            # Invalid tournamentId
+            response = execute("/tournaments/{tournamentId}/brackets/mine", path_params = {"tournamentId": 0})
+            assert response["statusCode"] == 404
+
+            # User doesn't have a bracket
+            response = execute("/tournaments/{tournamentId}/brackets/mine", path_params = {"tournamentId": tournament_id})
+            assert response["statusCode"] == 404
+
+            # Valid bracket
+            da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament_id, "name": "test"})
+            response = execute("/tournaments/{tournamentId}/brackets/mine", path_params = {"tournamentId": tournament_id})
+            assert_success(response)
+        finally:
+            da.delete_tournament(tournament_id)
+
 
     def _test_get_bracket(self):
         # TODO: eric is a bad example and should have done test cases for invalid parameters
@@ -86,22 +104,14 @@ class MyTest(unittest.TestCase):
         assert len(get_body(response)) == 0
 
         # non empty tournament
-        response = execute("/users", "POST")
-        user_id = get_body(response)["user_id"]
         other_user = da.create_user({"username": "test", "name": "test"})
-        bracket1 = da.create_bracket({"user_id": user_id, "tournament_id": tournament["tournament_id"], "name": "test", "score": 20})
+        bracket1 = da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 20})
         bracket2 = da.create_bracket({"user_id": other_user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 20})
 
         try:
             response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
             assert_success(response)
             assert len(get_body(response)) == 2
-
-            # With valid userId
-            response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]}, query_params = {"mine": "true"})
-            assert_success(response)
-            assert len(get_body(response)) == 1
-
         finally:
             da.delete_bracket(bracket1["bracket_id"])
             da.delete_bracket(bracket2["bracket_id"])
@@ -161,11 +171,8 @@ class MyTest(unittest.TestCase):
 
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert_success(response)
-            user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
-            user_brackets = da.get_brackets(tournament_id, user["user_id"])
-            assert len(user_brackets) == 1
-            bracket = user_brackets[0]
-            user_matches = da.get_matches(bracket["bracket_id"])
+            user_bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
+            user_matches = da.get_matches(user_bracket["bracket_id"])
             master_id = da.get_tournament(tournament_id)["master_bracket_id"]
             master_matches = da.get_matches(master_id)
             assert len(user_matches) == len(master_matches)
@@ -181,5 +188,4 @@ class MyTest(unittest.TestCase):
             da.delete_tournament(tournament_id)
 
     def tearDown(self):
-        user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
-        da.delete_user(user["user_id"])
+        da.delete_user(self.user["user_id"])
