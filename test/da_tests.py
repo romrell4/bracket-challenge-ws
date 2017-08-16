@@ -27,13 +27,18 @@ class DaTest(unittest.TestCase):
             dict2 = {"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test2"}
             self.run_simple_tests(None, da.create_bracket, da.update_bracket, da.delete_bracket, "bracket_id", dict1, dict2)
 
-            # Testing the get_brackets method
+            # Testing the get_brackets with id
             da.create_bracket({"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
             da.create_bracket({"user_id": user2["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
-            brackets = da.get_brackets(tournament["tournament_id"], None)
+            brackets = da.get_brackets(tournament["tournament_id"])
             assert len(brackets) == 2
-            bracket = da.get_brackets(tournament["tournament_id"], user1["user_id"])
-            assert len(bracket) == 1
+
+            # Testing the get_brackets with tournament and user
+            bracket = da.get_bracket(tournament_id = tournament["tournament_id"], user_id = user1["user_id"])
+            assert bracket is not None
+
+            bracket = da.get_bracket(tournament_id = tournament["tournament_id"], user_id = 0)
+            assert bracket is None
 
         finally:
             da.delete_tournament(tournament["tournament_id"])

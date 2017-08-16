@@ -80,16 +80,15 @@ def delete_tournament(tournament_id):
 
 ### BRACKETS ###
 
-def get_brackets(tournament_id, user_id):
-    sql = "SELECT * FROM brackets WHERE tournament_id = %s"
-    args = [tournament_id]
-    if user_id is not None:
-        sql += " AND user_id = %s"
-        args.append(user_id)
-    return get_list(Bracket, sql, *args)
+def get_brackets(tournament_id):
+    return get_list(Bracket, "SELECT * FROM brackets WHERE tournament_id = %s", tournament_id)
 
-def get_bracket(bracket_id):
-    return get_one(Bracket, "SELECT * FROM brackets WHERE bracket_id = %s", bracket_id)
+def get_bracket(bracket_id = None, tournament_id = None, user_id = None):
+    if bracket_id is not None:
+        return get_one(Bracket, "SELECT * FROM brackets WHERE bracket_id = %s", bracket_id)
+    elif tournament_id is not None and user_id is not None:
+        return get_one(Bracket, "SELECT * FROM brackets WHERE tournament_id = %s AND user_id = %s", tournament_id, user_id)
+    return None
 
 def create_bracket(bracket):
     # Need to check if the score exists. If it doesn't, we default it to zero in the database
