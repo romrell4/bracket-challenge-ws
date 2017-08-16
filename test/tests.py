@@ -37,6 +37,41 @@ def assert_success(response):
 def get_body(response):
     return json.loads(response["body"])
 
+def create_bracket(rounds, only_first_round):
+
+    # Todo: finish this by actually making it create the players, bracket, and matches
+
+    player_ids = []
+    for i in range(int(math.pow(2, rounds))):
+        # player = da.create_player({"name": "player" + str(i + 1)})
+        player_ids.append(i)
+
+    bracket = {
+        "name": "test",
+        "rounds": []
+    }
+
+    for round in range(rounds):
+        positions = int(len(player_ids) / math.pow(2, round + 1))
+        total_round = []
+        for position in range(positions):
+            match = {
+                "round": round + 1,
+                "position": position + 1
+            }
+
+            player1_index = int(position * math.pow(2, round + 1))
+
+            if round == 0 or not only_first_round:
+                match["player1_id"] = player_ids[player1_index]
+                match["player2_id"] = player_ids[int(player1_index + math.pow(2, round))]
+
+            if not only_first_round:
+                match["winner_id"] = player_ids[player1_index]
+
+            total_round.append(match)
+        bracket["rounds"].append(total_round)
+
 class MyTest(unittest.TestCase):
     def setUp(self):
         try:
@@ -44,7 +79,7 @@ class MyTest(unittest.TestCase):
         except ServiceException:
             self.user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
 
-    def test_login(self):
+    def _test_login(self):
         da.delete_user(self.user["user_id"])
 
         # Register as a new user
@@ -55,11 +90,11 @@ class MyTest(unittest.TestCase):
         response = execute("/users", "POST")
         assert_success(response)
 
-    def test_get_tournaments(self):
+    def _test_get_tournaments(self):
         response = execute("/tournaments")
         assert_success(response)
 
-    def test_create_tournament(self):
+    def _test_create_tournament(self):
         tournament = {"name": "Test"}
         # testing a nonadmin user trying to create a tournament
         response = execute("/tournaments", "POST", body = json.dumps(tournament))
@@ -81,7 +116,7 @@ class MyTest(unittest.TestCase):
             EVENT["headers"]["Token"] = properties.test_token
             da.delete_tournament(body["tournament_id"])
 
-    def test_get_my_bracket(self):
+    def _test_get_my_bracket(self):
         tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
         try:
             # Invalid tournamentId
@@ -99,8 +134,7 @@ class MyTest(unittest.TestCase):
         finally:
             da.delete_tournament(tournament_id)
 
-
-    def test_get_bracket(self):
+    def _test_get_bracket(self):
         tournament1_id = da.create_tournament({"name": "test"})["tournament_id"]
         bracket1_id = da.create_bracket({"tournament_id": tournament1_id, "name": "test"})["bracket_id"]
         da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 1, "player1_id": 1, "player2_id": 2})
@@ -161,7 +195,7 @@ class MyTest(unittest.TestCase):
             for player_id in player_ids:
                 da.delete_player(player_id)
 
-    def test_get_brackets(self):
+    def _test_get_brackets(self):
         # Invalid tournamentId
         response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": 0})
         assert_success(response)
@@ -188,7 +222,7 @@ class MyTest(unittest.TestCase):
             da.delete_user(other_user["user_id"])
             da.delete_tournament(tournament["tournament_id"])
 
-    def test_create_bracket(self):
+    def _test_create_bracket(self):
         bracket = {"name": "Master", "rounds": [
             [
                 {
