@@ -64,10 +64,8 @@ class MyTest(unittest.TestCase):
         assert_success(response)
 
     def test_get_bracket(self):
-        tournament1 = da.create_tournament({"name": "test"})
-        tournament1_id = tournament1["tournament_id"]
-        bracket1 = da.create_bracket({"tournament_id": tournament1_id, "name": "test"})
-        bracket1_id = bracket1["bracket_id"]
+        tournament1_id = da.create_tournament({"name": "test"})["tournament_id"]
+        bracket1_id = da.create_bracket({"tournament_id": tournament1_id, "name": "test"})["bracket_id"]
         da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 1, "player1_id": 1, "player2_id": 2})
         da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 2, "player1_id": 3, "player2_id": 4})
         da.create_match({"bracket_id": bracket1_id, "round": 2, "position": 1})
@@ -77,29 +75,27 @@ class MyTest(unittest.TestCase):
         bracket2 = da.create_bracket({"name": "test2", "tournament_id": tournament2_id})
         bracket2_id = bracket2["bracket_id"]
 
-        player_ids = []
-
         # change this number to change the size of a new tournament
         rounds = 3
+        player_ids = []
         for i in range(int(math.pow(2, rounds))):
             player = da.create_player({"name": "player" + str(i + 1)})
             player_ids.append(player["player_id"])
 
+        # The nested for loop is used to actually create a bracket that is full of matches
         total_rounds = int(math.log(len(player_ids), 2))
         for round in range(total_rounds):
             positions = int(len(player_ids) / math.pow(2, round + 1))
             for position in range(positions):
                 player1_index = int(position * math.pow(2, round + 1))
-                da.create_match(
-                    {
+                da.create_match({
                         "bracket_id": bracket2_id,
                         "round": round + 1,
                         "position": position + 1,
                         "player1_id": player_ids[player1_index],
                         "player2_id": player_ids[int(player1_index + math.pow(2, round))],
                         "winner_id": player_ids[player1_index]
-                    }
-                )
+                })
 
         try:
             # Invalid bracketId
