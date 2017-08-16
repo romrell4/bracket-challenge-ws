@@ -25,7 +25,7 @@ class Manager:
     def create_tournament(self, tournament):
         # Check for a tournament
         if tournament is None:
-            raise ServiceException("You did not add a bracket name", 400)
+            raise ServiceException("No tournament passed in to create", 400)
         # Check if user is an admin
         if self.user["admin"] == 0:
             raise ServiceException("You do not have permission to create a tournament", 403)
