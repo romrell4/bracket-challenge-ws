@@ -1,5 +1,6 @@
 import unittest
 import json
+import math
 
 import handler
 import da
@@ -80,16 +81,68 @@ class MyTest(unittest.TestCase):
             da.delete_tournament(tournament_id)
 
 
-    def _test_get_bracket(self):
-        # TODO: eric is a bad example and should have done test cases for invalid parameters
-        # TODO: this test should insert a new tournament to test with and then delete it at the end
+    def test_get_bracket(self):
+        tournament1_id = da.create_tournament({"name": "test"})["tournament_id"]
+        bracket1_id = da.create_bracket({"tournament_id": tournament1_id, "name": "test"})["bracket_id"]
+        da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 1, "player1_id": 1, "player2_id": 2})
+        da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 2, "player1_id": 3, "player2_id": 4})
+        da.create_match({"bracket_id": bracket1_id, "round": 2, "position": 1})
 
-        response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": 1, "bracketId": 3})
-        assert_success(response)
-        body = get_body(response)
-        print(json.dumps(body, indent = 4))
-        assert "rounds" in body
-        assert len(body["rounds"]) > 1
+        tournament2 = da.create_tournament({"name": "test_full"})
+        tournament2_id = tournament2["tournament_id"]
+        bracket2 = da.create_bracket({"name": "test2", "tournament_id": tournament2_id})
+        bracket2_id = bracket2["bracket_id"]
+
+        # change this number to change the size of a new tournament
+        rounds = 3
+        player_ids = []
+        for i in range(int(math.pow(2, rounds))):
+            player = da.create_player({"name": "player" + str(i + 1)})
+            player_ids.append(player["player_id"])
+
+        # The nested for loop is used to actually create a bracket that is full of matches
+        total_rounds = int(math.log(len(player_ids), 2))
+        for round in range(total_rounds):
+            positions = int(len(player_ids) / math.pow(2, round + 1))
+            for position in range(positions):
+                player1_index = int(position * math.pow(2, round + 1))
+                da.create_match({
+                        "bracket_id": bracket2_id,
+                        "round": round + 1,
+                        "position": position + 1,
+                        "player1_id": player_ids[player1_index],
+                        "player2_id": player_ids[int(player1_index + math.pow(2, round))],
+                        "winner_id": player_ids[player1_index]
+                })
+
+        try:
+            # Invalid bracketId
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament1_id, "bracketId": 0})
+            assert response["statusCode"] == 400
+
+            # Valid bracketId on a new "master" bracket
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament1_id, "bracketId": bracket1_id})
+            assert_success(response)
+            body = get_body(response)
+            assert "rounds" in body
+            assert len(body["rounds"]) == 2
+            assert len(body["rounds"][0]) == 2
+            assert len(body["rounds"][1]) == 1
+
+            # Valid bracketId on a full bracket
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament2_id, "bracketId": bracket2_id})
+            assert_success(response)
+            body = get_body(response)
+            assert "rounds" in body
+            assert len(body["rounds"]) == total_rounds
+            for round in range(total_rounds):
+                assert len(body["rounds"][round]) == int(len(player_ids) / math.pow(2, round + 1))
+
+        finally:
+            da.delete_tournament(tournament1_id)
+            da.delete_tournament(tournament2_id)
+            for player_id in player_ids:
+                da.delete_player(player_id)
 
     def test_get_brackets(self):
         # Invalid tournamentId

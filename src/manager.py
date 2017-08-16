@@ -68,6 +68,8 @@ class Manager:
 
     def get_bracket(self, bracket_id):
         bracket = da.get_bracket(bracket_id)
+        if bracket is None:
+            raise ServiceException("This bracket does not exist", 400)
         bracket["rounds"] = self.get_rounds(bracket_id)
         return bracket
 

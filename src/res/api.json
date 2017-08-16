@@ -234,6 +234,12 @@
 						"schema": {
 							"$ref": "#/definitions/bracket"
 						}
+					},
+					"400": {
+						"description": "Invalid bracketId",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
 					}
 				},
 				"x-amazon-apigateway-integration": {
