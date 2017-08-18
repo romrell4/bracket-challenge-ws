@@ -67,6 +67,10 @@ class Manager:
         new_bracket_id = self.create_and_fill_bracket(bracket_to_create, master)
         return self.get_bracket(new_bracket_id)
 
+    def create_bracket_and_matches(self, bracket):
+        new_bracket_id = da.create_bracket(bracket)["bracket_id"]
+        da.create_matches(new_bracket_id, bracket["rounds"])
+
     def get_my_bracket(self, tournament_id):
         bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
         if bracket is None:

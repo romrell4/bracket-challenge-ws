@@ -139,6 +139,17 @@ def create_match(match):
                       match.get("bracket_id"), match.get("round"), match.get("position"), match.get("player1_id"), match.get("player2_id"), match.get("seed1"), match.get("seed2"), match.get("winner_id"))
     return get_match(match_id)
 
+def create_matches(bracket_id, rounds):
+    sql = "INSERT INTO matches (bracket_id, round, position, player1_id, player2_id, seed1, seed2, winner_id) VALUES "
+    values = []
+    args = []
+    for round in rounds:
+        for match in round:
+            values.append("(%s, %s, %s, %s, %s, %s, %s, %s)")
+            args += [bracket_id, match["round"], match["position"], match["player1_id"], match["player2_id"], match["seed1"], match["seed2"], match["winner_id"]]
+    sql += ", ".join(values)
+    execute(sql, *args)
+
 def update_match(match_id, match):
     execute("UPDATE matches SET bracket_id = %s, round = %s, position = %s, player1_id = %s, player2_id = %s, seed1 = %s, seed2 = %s, winner_id = %s where match_id = %s",
             match.get("bracket_id"), match.get("round"), match.get("position"), match.get("player1_id"), match.get("player2_id"), match.get("seed1"), match.get("seed2"), match.get("winner_id"), match_id)
