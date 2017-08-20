@@ -45,11 +45,12 @@ def create_bracket(rounds, only_first_round, commit_to_database = True):
             player = da.create_player(player)
         player_ids.append(player["player_id"])
 
-    tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
-    bracket = {"tournament_id": tournament_id, "name": "test"}
+    tournament = {"name": "test"}
+    bracket = {"name": "test"}
     if commit_to_database:
+        tournament = da.create_tournament(tournament)
+        bracket["tournament_id"] = tournament["tournament_id"]
         bracket = da.create_bracket(bracket)
-    bracket_id = bracket["bracket_id"]
 
     bracket["rounds"] = []
     for round in range(rounds):
@@ -57,7 +58,6 @@ def create_bracket(rounds, only_first_round, commit_to_database = True):
         positions = int(len(player_ids) / math.pow(2, round + 1))
         for position in range(positions):
             match = {
-                "bracket_id": bracket_id,
                 "round": round + 1,
                 "position": position + 1
             }
@@ -72,7 +72,9 @@ def create_bracket(rounds, only_first_round, commit_to_database = True):
                 match["winner_id"] = player_ids[player1_index]
 
             if commit_to_database:
+                match["bracket_id"] = bracket["bracket_id"]
                 match = da.create_match(match)
+                
             round_array.append(match)
         bracket["rounds"].append(round_array)
     return bracket, player_ids
