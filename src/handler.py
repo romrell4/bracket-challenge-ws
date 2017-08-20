@@ -39,6 +39,8 @@ def lambda_handler(event, context):
             response_body = manager.get_my_bracket(path_parameters["tournamentId"])
         elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}" and method == "GET":
             response_body = manager.get_bracket(path_parameters["bracketId"])
+        elif resource == "/tournaments/{tournamentId}/brackets/{bracketId}" and method == "PUT":
+            response_body = manager.update_bracket(path_parameters["bracketId"], body)
         else:
             raise ServiceException("Invalid path: '{} {}'".format(resource, method))
 

@@ -319,7 +319,7 @@ class MyTest(unittest.TestCase):
 
             # Test invalid bracketId
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": 0}, body = json.dumps(bracket))
-            assert response["statusCode"] == 404
+            assert response["statusCode"] == 400
 
             # test difference in number of rounds
             del bracket["rounds"][0]
