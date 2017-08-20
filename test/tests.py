@@ -295,7 +295,7 @@ class MyTest(unittest.TestCase):
         bracket, player_ids = create_bracket(rounds, True)
         tournament_id = bracket["tournament_id"]
         bracket_id = bracket["bracket_id"]
-        full_bracket, player_ids_full_bracket = create_bracket(rounds, False)
+        # full_bracket, player_ids_full_bracket = create_bracket(rounds, False)
         try:
             bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}",
                                path_params = {"tournament_id": tournament_id, "bracketId": bracket_id}))
@@ -349,8 +349,10 @@ class MyTest(unittest.TestCase):
 
             #Valid changing the entire bracket
             # TODO: Finish this final test
+            
+
         finally:
-            da.delete_tournament(bracket["tournament_id"])
+            da.delete_tournament(tournament_id)
             for player_id in player_ids:
                 da.delete_player(player_id)
 
