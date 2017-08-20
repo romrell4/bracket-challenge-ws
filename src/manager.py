@@ -71,6 +71,21 @@ class Manager:
         new_bracket_id = da.create_bracket(bracket)["bracket_id"]
         da.create_matches(new_bracket_id, bracket["rounds"])
 
+    def update_bracket(self, bracket_id, bracket):
+        if bracket is None or bracket["name"] is None or bracket["rounds"] is None:
+            raise ServiceException("Invalid bracket passed in", 400)
+
+        original_bracket = self.get_bracket(bracket_id)
+        if original_bracket is None:
+            raise ServiceException("Invalid bracket id", 404)
+
+        original_rounds, bracket_rounds = original_bracket["rounds"], bracket["rounds"]
+
+        for original_round, bracket_round in zip(original_rounds, bracket_rounds):
+            if len(original_round) != len(bracket_round):
+                raise ServiceException("Invalid bracket size passed in", 400)
+        return bracket
+
     def get_my_bracket(self, tournament_id):
         bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
         if bracket is None:
