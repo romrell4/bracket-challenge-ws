@@ -158,12 +158,12 @@ class MyTest(unittest.TestCase):
             for position in range(positions):
                 player1_index = int(position * math.pow(2, round + 1))
                 da.create_match({
-                        "bracket_id": bracket2_id,
-                        "round": round + 1,
-                        "position": position + 1,
-                        "player1_id": player_ids[player1_index],
-                        "player2_id": player_ids[int(player1_index + math.pow(2, round))],
-                        "winner_id": player_ids[player1_index]
+                    "bracket_id": bracket2_id,
+                    "round": round + 1,
+                    "position": position + 1,
+                    "player1_id": player_ids[player1_index],
+                    "player2_id": player_ids[int(player1_index + math.pow(2, round))],
+                    "winner_id": player_ids[player1_index]
                 })
 
         try:
@@ -296,14 +296,12 @@ class MyTest(unittest.TestCase):
         bracket, player_ids = create_bracket(rounds, True)
         tournament_id = bracket["tournament_id"]
         bracket_id = bracket["bracket_id"]
-        # full_bracket, player_ids_full_bracket = create_bracket(rounds, False)
+        full_bracket, player_ids_full_bracket = create_bracket(rounds, False)
         try:
-            bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}",
-                               path_params = {"tournament_id": tournament_id, "bracketId": bracket_id}))
+            bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournament_id": tournament_id, "bracketId": bracket_id}))
 
             # Test invalid bracketId
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": 0},
-                               body = json.dumps(bracket))
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": 0}, body = json.dumps(bracket))
             assert response["statusCode"] == 404
 
             # Test invalid body
@@ -312,49 +310,52 @@ class MyTest(unittest.TestCase):
 
             # Test null name
             bracket["name"] = None
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id},
-                               body = json.dumps(bracket))
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert response["statusCode"] == 400
             bracket["name"] = "test"
 
             # test null matches
             rounds = bracket["rounds"]
             bracket["rounds"] = None
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id},
-                               body=json.dumps(bracket))
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert response["statusCode"] == 400
             bracket["rounds"] = rounds
 
             # test difference in number of rounds
             del bracket["rounds"][0]
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id},
-                               body=json.dumps(bracket))
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert response["statusCode"] == 400
             bracket["rounds"] = rounds
 
             # Valid test with no difference
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id},
-                               body=json.dumps(bracket))
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert_success(response)
             assert get_body(response) == bracket
 
             # Valid test with one
             bracket_one_change = bracket
             bracket_one_change["rounds"][0][0]["winner_id"] = player_ids[1]
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id},
-                               body=json.dumps(bracket_one_change))
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket_one_change))
             assert_success(response)
             body = get_body(response)
             assert body != bracket
             assert body == bracket_one_change
 
-            #Valid changing the entire bracket
-            # TODO: Finish this final test
-            
+            # Valid changing the entire bracket
+            bracket_many_changes = bracket
+            bracket_many_changes["rounds"] = full_bracket["rounds"]
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket_many_changes))
+            assert_success(response)
+            body = get_body(response)
+            assert body != bracket
+            assert body == bracket_many_changes
 
         finally:
+            da.delete_tournament(full_bracket["tournament_id"])
             da.delete_tournament(tournament_id)
             for player_id in player_ids:
+                da.delete_player(player_id)
+            for player_id in player_ids_full_bracket:
                 da.delete_player(player_id)
 
     def _test_create_bracket_method(self):
@@ -362,8 +363,7 @@ class MyTest(unittest.TestCase):
         rounds = 3
         bracket, player_ids = create_bracket(rounds, True)
         try:
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}",
-                               path_params = {"tournamentId": bracket["tournament_id"], "bracketId": bracket["bracket_id"]})
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": bracket["tournament_id"], "bracketId": bracket["bracket_id"]})
             assert_success(response)
             body = get_body(response)
             assert body is not None
@@ -391,8 +391,7 @@ class MyTest(unittest.TestCase):
         rounds = 3
         bracket, player_ids = create_bracket(rounds, False)
         try:
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}",
-                               path_params={"tournamentId": bracket["tournament_id"], "bracketId": bracket["bracket_id"]})
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": bracket["tournament_id"], "bracketId": bracket["bracket_id"]})
             assert_success(response)
             body = get_body(response)
             assert body is not None
