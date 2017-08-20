@@ -79,11 +79,17 @@ class Manager:
         if original_bracket is None:
             raise ServiceException("Invalid bracket id", 404)
 
-        original_rounds, bracket_rounds = original_bracket["rounds"], bracket["rounds"]
+        original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
+        if len(original_rounds) != len(rounds):
+            raise ServiceException("Invalid bracket size passed in. {} != {}".format(len(original_rounds), len(rounds)), 400)
 
-        for original_round, bracket_round in zip(original_rounds, bracket_rounds):
-            if len(original_round) != len(bracket_round):
-                raise ServiceException("Invalid bracket size passed in", 400)
+        for original_round, round in zip(original_rounds, rounds):
+            if len(original_round) != len(round):
+                raise ServiceException("Invalid round size passed in. {} != {}".format(len(original_round), len(round)), 400)
+
+            for original_match, match in zip(original_round, round):
+                #TODO: Actually update ones that are different
+                pass
         return bracket
 
     def get_my_bracket(self, tournament_id):
