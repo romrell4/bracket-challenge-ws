@@ -88,7 +88,7 @@ class Manager:
                 raise ServiceException("Invalid round size passed in. {} != {}".format(len(original_round), len(round)), 400)
 
             for original_match, match in zip(original_round, round):
-                #TODO: Actually update ones that are different
+                # TODO: Actually update ones that are different
                 pass
         return bracket
 
