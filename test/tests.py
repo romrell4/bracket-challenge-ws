@@ -38,9 +38,7 @@ def get_body(response):
     return json.loads(response["body"])
 
 def create_bracket(rounds, only_first_round):
-
-    # TODO: update this to new ideas of returning the full bracket as well/ maybe not pushing to the database gaurenteed
-
+    # TODO: update this to new ideas of maybe not pushing to the database guaranteed
     player_ids = []
     for i in range(int(math.pow(2, rounds))):
         player = da.create_player({"name": "player" + str(i + 1)})
@@ -50,9 +48,10 @@ def create_bracket(rounds, only_first_round):
     bracket = da.create_bracket({"tournament_id": tournament_id, "name": "test"})
     bracket_id = bracket["bracket_id"]
 
+    bracket["rounds"] = []
     for round in range(rounds):
+        round_array = []
         positions = int(len(player_ids) / math.pow(2, round + 1))
-        total_round = []
         for position in range(positions):
             match = {
                 "bracket_id": bracket_id,
@@ -69,7 +68,9 @@ def create_bracket(rounds, only_first_round):
             if not only_first_round:
                 match["winner_id"] = player_ids[player1_index]
 
-            da.create_match(match)
+            match = da.create_match(match)
+            round_array.append(match)
+        bracket["rounds"].append(round_array)
     return (bracket, player_ids)
 
 class MyTest(unittest.TestCase):
