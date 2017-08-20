@@ -300,10 +300,6 @@ class MyTest(unittest.TestCase):
         try:
             bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournament_id": tournament_id, "bracketId": bracket_id}))
 
-            # Test invalid bracketId
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": 0}, body = json.dumps(bracket))
-            assert response["statusCode"] == 404
-
             # Test invalid body
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id})
             assert response["statusCode"] == 400
@@ -320,6 +316,10 @@ class MyTest(unittest.TestCase):
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert response["statusCode"] == 400
             bracket["rounds"] = rounds
+
+            # Test invalid bracketId
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": 0}, body = json.dumps(bracket))
+            assert response["statusCode"] == 404
 
             # test difference in number of rounds
             del bracket["rounds"][0]
