@@ -297,7 +297,7 @@ class MyTest(unittest.TestCase):
         bracket_id = bracket["bracket_id"]
         full_bracket, player_ids_full_bracket = create_bracket(rounds, False)
         try:
-            bracket = get_body(execute("/tournament/{tournamentId}/brackets/{bracketId}",
+            bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}",
                                path_params = {"tournament_id": tournament_id, "bracketId": bracket_id}))
 
             # Test invalid bracketId
