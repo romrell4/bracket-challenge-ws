@@ -76,9 +76,6 @@ class Manager:
             raise ServiceException("Invalid bracket passed in", 400)
 
         original_bracket = self.get_bracket(bracket_id)
-        if original_bracket is None:
-            raise ServiceException("Invalid bracket id", 404)
-
         original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
         if len(original_rounds) != len(rounds):
             raise ServiceException("Invalid bracket size passed in. {} != {}".format(len(original_rounds), len(rounds)), 400)
@@ -88,9 +85,13 @@ class Manager:
                 raise ServiceException("Invalid round size passed in. {} != {}".format(len(original_round), len(round)), 400)
 
             for original_match, match in zip(original_round, round):
-                # TODO: Actually update ones that are different
-                pass
-        return bracket
+                # Only update the matches that have changed
+                if original_match["player1_id"] != match["player1_id"] or original_match["player2_id"] != match["player2_id"] or original_match["winner_id"] != match["winner_id"]:
+                    original_match["player1_id"] = match["player1_id"]
+                    original_match["player2_id"] = match["player2_id"]
+                    original_match["winner_id"] = match["winner_id"]
+                    da.update_match(original_match["match_id"], original_match)
+        return self.get_bracket(bracket_id)
 
     def get_my_bracket(self, tournament_id):
         bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
