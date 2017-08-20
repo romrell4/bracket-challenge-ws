@@ -37,15 +37,18 @@ def assert_success(response):
 def get_body(response):
     return json.loads(response["body"])
 
-def create_bracket(rounds, only_first_round):
-    # TODO: update this to new ideas of maybe not pushing to the database guaranteed
+def create_bracket(rounds, only_first_round, commit_to_database = True):
     player_ids = []
     for i in range(int(math.pow(2, rounds))):
-        player = da.create_player({"name": "player" + str(i + 1)})
+        player = {"name": "player" + str(i + 1)}
+        if commit_to_database:
+            player = da.create_player(player)
         player_ids.append(player["player_id"])
 
     tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
-    bracket = da.create_bracket({"tournament_id": tournament_id, "name": "test"})
+    bracket = {"tournament_id": tournament_id, "name": "test"}
+    if commit_to_database:
+        bracket = da.create_bracket(bracket)
     bracket_id = bracket["bracket_id"]
 
     bracket["rounds"] = []
@@ -68,10 +71,11 @@ def create_bracket(rounds, only_first_round):
             if not only_first_round:
                 match["winner_id"] = player_ids[player1_index]
 
-            match = da.create_match(match)
+            if commit_to_database:
+                match = da.create_match(match)
             round_array.append(match)
         bracket["rounds"].append(round_array)
-    return (bracket, player_ids)
+    return bracket, player_ids
 
 class MyTest(unittest.TestCase):
     def setUp(self):
