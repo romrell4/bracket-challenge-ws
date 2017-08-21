@@ -89,9 +89,11 @@ class Manager:
             for original_match, match in zip(original_round, round):
                 # Only update the matches that have changed
                 if original_match["player1_id"] != match.get("player1_id") or original_match["player2_id"] != match.get("player2_id") or original_match["winner_id"] != match.get("winner_id"):
-                    original_match["player1_id"] = match["player1_id"]
-                    original_match["player2_id"] = match["player2_id"]
-                    original_match["winner_id"] = match["winner_id"]
+                    original_match["player1_id"] = match.get("player1_id")
+                    original_match["player2_id"] = match.get("player2_id")
+                    original_match["seed1"] = match.get("seed1")
+                    original_match["seed2"] = match.get("seed2")
+                    original_match["winner_id"] = match.get("winner_id")
                     da.update_match(original_match["match_id"], original_match)
 
         da.update_bracket(bracket_id, original_bracket)
