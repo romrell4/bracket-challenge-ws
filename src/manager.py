@@ -36,9 +36,11 @@ class Manager:
         return da.get_brackets(tournament_id)
 
     def create_bracket(self, tournament_id, bracket):
-        tournament = da.get_tournament(tournament_id)
-        # TODO: Add a condition for if they do not pass in anything
+        if bracket is None:
+            raise ServiceException("Invalid bracket passed in", 400)
+
         # Check that the tournament exists
+        tournament = da.get_tournament(tournament_id)
         if tournament is None:
             raise ServiceException("This tournament does not exist.", 400)
 
