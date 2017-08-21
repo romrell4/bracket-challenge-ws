@@ -31,12 +31,11 @@ class Manager:
             raise ServiceException("You do not have permission to create a tournament", 403)
         return da.create_tournament(tournament)
 
-
     def get_brackets(self, tournament_id):
         return da.get_brackets(tournament_id)
 
     def create_bracket(self, tournament_id, bracket):
-        if bracket is None:
+        if bracket is None or "rounds" not in bracket:
             raise ServiceException("Invalid bracket passed in", 400)
 
         # Check that the tournament exists
