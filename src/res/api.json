@@ -308,6 +308,58 @@
 					"contentHandling": "CONVERT_TO_TEXT",
 					"type": "aws_proxy"
 				}
+			},
+			"put": {
+				"summary": "Update an existing bracket in the specified tournament",
+				"produces": [
+					"application/json"
+				],
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "bracketId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/definitions/bracket"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Bracket",
+						"schema": {
+							"$ref": "#/definitions/bracket"
+						}
+					},
+					"400": {
+						"description": "Invalid bracketId or Body",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
+				}
 			}
 		}
 	},
