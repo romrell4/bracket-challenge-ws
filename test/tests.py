@@ -38,6 +38,9 @@ def get_body(response):
     return json.loads(response["body"])
 
 def create_bracket(rounds, only_first_round, commit_to_database = True):
+
+    # TODO: use same player_ids
+
     player_ids = []
     for i in range(int(math.pow(2, rounds))):
         player = {"name": "player" + str(i + 1)}
@@ -373,6 +376,9 @@ class MyTest(unittest.TestCase):
 
     def _test_create_bracket_method(self):
         # Change this number to change the number of rounds in the tournament
+
+        # TODO: new tests for not putting in database
+
         rounds = 3
         bracket, player_ids = create_bracket(rounds, True)
         try:
