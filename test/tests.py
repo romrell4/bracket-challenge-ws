@@ -86,7 +86,7 @@ class MyTest(unittest.TestCase):
         except ServiceException:
             self.user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
 
-    def _test_login(self):
+    def test_login(self):
         da.delete_user(self.user["user_id"])
 
         # Register as a new user
@@ -97,11 +97,11 @@ class MyTest(unittest.TestCase):
         response = execute("/users", "POST")
         assert_success(response)
 
-    def _test_get_tournaments(self):
+    def test_get_tournaments(self):
         response = execute("/tournaments")
         assert_success(response)
 
-    def _test_create_tournament(self):
+    def test_create_tournament(self):
         tournament = {"name": "Test"}
         # testing a nonadmin user trying to create a tournament
         response = execute("/tournaments", "POST", body = json.dumps(tournament))
@@ -123,7 +123,7 @@ class MyTest(unittest.TestCase):
             EVENT["headers"]["Token"] = properties.test_token
             da.delete_tournament(body["tournament_id"])
 
-    def _test_get_my_bracket(self):
+    def test_get_my_bracket(self):
         tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
         try:
             # Invalid tournamentId
@@ -141,7 +141,10 @@ class MyTest(unittest.TestCase):
         finally:
             da.delete_tournament(tournament_id)
 
-    def _test_get_bracket(self):
+    def test_get_bracket(self):
+
+        # TODO: update to use create_bracket function
+
         tournament1_id = da.create_tournament({"name": "test"})["tournament_id"]
         bracket1_id = da.create_bracket({"tournament_id": tournament1_id, "name": "test"})["bracket_id"]
         da.create_match({"bracket_id": bracket1_id, "round": 1, "position": 1, "player1_id": 1, "player2_id": 2})
@@ -152,7 +155,7 @@ class MyTest(unittest.TestCase):
         bracket2_id = da.create_bracket({"name": "test2", "tournament_id": tournament2_id})["bracket_id"]
 
         # change this number to change the size of a new tournament
-        rounds = 3
+        rounds = 2
         player_ids = []
         for i in range(int(math.pow(2, rounds))):
             player = da.create_player({"name": "player" + str(i + 1)})
@@ -201,7 +204,7 @@ class MyTest(unittest.TestCase):
             for player_id in player_ids:
                 da.delete_player(player_id)
 
-    def _test_get_brackets(self):
+    def test_get_brackets(self):
         # Invalid tournamentId
         response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": 0})
         assert_success(response)
@@ -228,7 +231,7 @@ class MyTest(unittest.TestCase):
             da.delete_user(other_user["user_id"])
             da.delete_tournament(tournament["tournament_id"])
 
-    def _test_create_bracket(self):
+    def test_create_bracket(self):
         bracket = {"name": "Master", "rounds": [
             [
                 {
@@ -298,7 +301,7 @@ class MyTest(unittest.TestCase):
             da.delete_tournament(tournament_id)
 
     def test_update_bracket(self):
-        rounds = 3
+        rounds = 2
         bracket, player_ids = create_bracket(rounds, True)
         tournament_id = bracket["tournament_id"]
         bracket_id = bracket["bracket_id"]
@@ -328,7 +331,7 @@ class MyTest(unittest.TestCase):
             assert response["statusCode"] == 400
 
             # test difference in number of rounds
-            del bracket["rounds"][0]
+            bracket["rounds"] = []
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert response["statusCode"] == 400
             bracket["rounds"] = rounds
@@ -338,23 +341,27 @@ class MyTest(unittest.TestCase):
             assert_success(response)
             assert get_body(response) == bracket
 
+            # Valid with name change
+            bracket["name"] = "test2"
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
+            assert_success(response)
+            assert get_body(response)["name"] == "test2"
+            
             # Valid test with one
-            bracket_one_change = bracket
-            bracket_one_change["rounds"][0][0]["winner_id"] = player_ids[1]
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket_one_change))
+            bracket["rounds"][0][0]["winner_id"] = bracket["rounds"][0][0]["player1_id"]
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert_success(response)
             body = get_body(response)
-            assert body != bracket
-            assert body == bracket_one_change
+            assert body["rounds"][0][0]["winner_name"] is not None
 
             # Valid changing the entire bracket
-            bracket_many_changes = bracket
-            bracket_many_changes["rounds"] = full_bracket["rounds"]
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket_many_changes))
+            bracket["rounds"] = full_bracket["rounds"]
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert_success(response)
             body = get_body(response)
-            assert body != bracket
-            assert body == bracket_many_changes
+            for round in body["rounds"]:
+                for match in round:
+                    assert match["winner_name"] is not None
 
         finally:
             da.delete_tournament(full_bracket["tournament_id"])
