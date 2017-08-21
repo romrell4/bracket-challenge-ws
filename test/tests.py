@@ -264,6 +264,8 @@ class MyTest(unittest.TestCase):
             # Invalid  bracket
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id})
             assert response["statusCode"] == 400
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps({"name": "test"}))
+            assert response["statusCode"] == 400
 
             # Invalid tournamentId
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0}, body = json.dumps(bracket))
