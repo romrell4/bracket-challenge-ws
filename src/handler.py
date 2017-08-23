@@ -27,6 +27,8 @@ def lambda_handler(event, context):
         elif manager.user is None:
             # If this user isn't in our database, they are only allowed to use the login endpoint
             raise ServiceException("This user is not tracked in our database. The only allowed endpoint is /users POST to create an account.", 403)
+        elif resource == "/players" and method == "GET":
+            response_body = manager.get_players()
         elif resource == "/tournaments" and method == "GET":
             response_body = manager.get_tournaments()
         elif resource == "/tournaments" and method == "POST":
