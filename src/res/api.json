@@ -187,7 +187,7 @@
 						}
 					},
 					"400": {
-						"description": "Invalid tournamentId",
+						"description": "Invalid tournamentId or invalid bracket",
 						"schema": {
 							"$ref": "#/definitions/error"
 						}

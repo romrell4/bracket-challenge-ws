@@ -39,6 +39,7 @@ def get_body(response):
 
 def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None):
 
+    # test to see if they passed in player_ids or not. If they didn't it creates players
     if player_ids is None:
         player_ids = []
         for i in range(int(math.pow(2, rounds))):
@@ -48,6 +49,7 @@ def create_bracket(rounds, only_first_round, commit_to_database = True, player_i
             else:
                 player["player_id"] = i + 1
             player_ids.append(player["player_id"])
+    # If they passed in player_ids it makes sure that they passed in enough players to create the tournament
     else:
         assert len(player_ids) == int(math.pow(2, rounds))
 
@@ -148,7 +150,7 @@ class MyTest(unittest.TestCase):
     def test_get_bracket(self):
 
         # change this number to change the size of a new tournament
-        rounds = 3
+        rounds = 2
         bracket1, player_ids = create_bracket(rounds, True)
         tournament1_id = bracket1["tournament_id"]
         bracket1_id = bracket1["bracket_id"]
@@ -243,8 +245,6 @@ class MyTest(unittest.TestCase):
             # Invalid  bracket
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id})
             assert response["statusCode"] == 400
-            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps({"name": "test"}))
-            assert response["statusCode"] == 400
 
             # Invalid tournamentId
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0}, body = json.dumps(bracket))
@@ -254,8 +254,12 @@ class MyTest(unittest.TestCase):
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert response["statusCode"] == 403
 
-            # test with Admin privileges
+            # test with admin privileges trying to create a blank master bracket
             EVENT["headers"]["Token"] = properties.admin_token
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps({"name": "test"}))
+            assert response["statusCode"] == 400
+
+            # test with Admin privileges
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert_success(response)
             tournament = da.get_tournament(tournament_id)
@@ -268,6 +272,8 @@ class MyTest(unittest.TestCase):
             EVENT["headers"]["Token"] = properties.test_token
 
             # test with master
+            bracket = {"name": "test"}
+
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert_success(response)
             user_bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
@@ -362,7 +368,7 @@ class MyTest(unittest.TestCase):
         # Change this number to change the number of rounds in the tournament
         rounds = 2
 
-        # Testing a  master bracket (first round only)
+        # Testing a master bracket (first round only)
         bracket, player_ids = create_bracket(rounds, True)
 
         try:
@@ -404,7 +410,6 @@ class MyTest(unittest.TestCase):
                     assert body["rounds"][round][match]["player2_id"] is not None
 
         finally:
-            pass
             da.delete_tournament(bracket["tournament_id"])
             for player_id in player_ids:
                 da.delete_player(player_id)
