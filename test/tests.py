@@ -103,6 +103,10 @@ class MyTest(unittest.TestCase):
         response = execute("/users", "POST")
         assert_success(response)
 
+    def test_get_players(self):
+        response = execute("/players")
+        assert_success(response)
+
     def test_get_tournaments(self):
         response = execute("/tournaments")
         assert_success(response)
