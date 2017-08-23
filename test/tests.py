@@ -38,7 +38,6 @@ def get_body(response):
     return json.loads(response["body"])
 
 def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None):
-
     if player_ids is None:
         # creates new players
         player_ids = []

@@ -52,6 +52,16 @@ def create_player(player):
     player_id = insert("INSERT INTO players (name) VALUES (%s)", player.get("name"))
     return get_player(player_id)
 
+def create_players(players):
+    sql = "INSERT INTO players (name) VALUES "
+    values = []
+    args = []
+    for player in players:
+        values.append("(%s)")
+        args += [player.get("name")]
+    sql += ", ".join(values)
+    execute(sql, *args)
+
 def update_player(player_id, player):
     execute("UPDATE players SET name = %s WHERE player_id = %s", player.get("name"), player_id)
     return get_player(player_id)

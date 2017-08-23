@@ -13,6 +13,11 @@ class DaTest(unittest.TestCase):
         dict2 = {"name": "test2"}
         self.run_simple_tests(da.get_players, da.create_player, da.update_player, da.delete_player, "player_id", dict1, dict2)
 
+        # test batch insert of players
+        da.create_players([dict1, dict2])
+
+        # TODO: delete these two players
+
     def test_tournaments(self):
         dict1 = {"name": "test"}
         dict2 = {"name": "test", "master_bracket_id": 0}
@@ -60,11 +65,39 @@ class DaTest(unittest.TestCase):
             self.run_simple_tests(None, da.create_match, da.update_match, da.delete_match, "match_id", dict1, dict2)
 
             # Testing get all matches
-            da.create_match({"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
+            match = da.create_match({"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
                              "seed1": 1, "winner_id": player1["player_id"]})
             matches = da.get_matches(bracket["bracket_id"])
             assert matches is not None
             assert len(matches) == 1
+            da.delete_match(match["match_id"])
+
+            # test batch insert matches
+            rounds = [
+                [
+                    {
+                        "round": 1,
+                        "position": 1,
+                        "player1_id": player1["player_id"],
+                        "seed1": 1,
+                        "winner_id": player1["player_id"]
+                    },
+                    {
+                        "round": 1,
+                        "position": 2
+                    }
+                ],
+                [
+                    {
+                        "round": 2,
+                        "position": 1
+                    }
+                ]
+            ]
+            da.create_matches(bracket["bracket_id"], rounds)
+            matches = da.get_matches(bracket["bracket_id"])
+            assert matches is not None
+            assert len(matches) == 3
 
         finally:
             da.delete_tournament(tournament["tournament_id"])
