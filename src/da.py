@@ -146,7 +146,7 @@ def create_matches(bracket_id, rounds):
     for round in rounds:
         for match in round:
             values.append("(%s, %s, %s, %s, %s, %s, %s, %s)")
-            args += [bracket_id, match["round"], match["position"], match["player1_id"], match["player2_id"], match["seed1"], match["seed2"], match["winner_id"]]
+            args += [bracket_id, match.get("round"), match.get("position"), match.get("player1_id"), match.get("player2_id"), match.get("seed1"), match.get("seed2"), match.get("winner_id")]
     sql += ", ".join(values)
     execute(sql, *args)
 

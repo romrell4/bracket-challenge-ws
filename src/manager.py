@@ -35,7 +35,7 @@ class Manager:
         return da.get_brackets(tournament_id)
 
     def create_bracket(self, tournament_id, bracket):
-        if bracket is None or "rounds" not in bracket:
+        if bracket is None:
             raise ServiceException("Invalid bracket passed in", 400)
 
         # Check that the tournament exists
@@ -135,6 +135,8 @@ class Manager:
 
     @staticmethod
     def create_and_fill_bracket(bracket_to_create, bracket_to_copy):
+        if "rounds" not in bracket_to_copy:
+            raise ServiceException("Cannot copy a bracket with no rounds", 400)
         new_bracket = da.create_bracket(bracket_to_create)
         for rounds in bracket_to_copy["rounds"]:
             for match in rounds:
