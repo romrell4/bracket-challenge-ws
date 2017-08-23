@@ -39,8 +39,8 @@ def get_body(response):
 
 def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None):
 
-    # test to see if they passed in player_ids or not. If they didn't it creates players
     if player_ids is None:
+        # creates new players
         player_ids = []
         for i in range(int(math.pow(2, rounds))):
             player = {"name": "player" + str(i + 1)}
@@ -49,8 +49,8 @@ def create_bracket(rounds, only_first_round, commit_to_database = True, player_i
             else:
                 player["player_id"] = i + 1
             player_ids.append(player["player_id"])
-    # If they passed in player_ids it makes sure that they passed in enough players to create the tournament
     else:
+        # makes sure that they passed in enough players to create the tournament
         assert len(player_ids) == int(math.pow(2, rounds))
 
     tournament = {"name": "test"}
