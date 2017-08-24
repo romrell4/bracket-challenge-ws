@@ -15,8 +15,11 @@ class DaTest(unittest.TestCase):
 
         # test batch insert of players
         da.create_players([dict1, dict2])
-
-        # TODO: delete these two players
+        players = da.get_players()
+        results = [player for player in players if player["name"].startswith("test")]
+        assert len(results) == 2
+        for player in results:
+            da.delete_player(player["player_id"])
 
     def test_tournaments(self):
         dict1 = {"name": "test"}
