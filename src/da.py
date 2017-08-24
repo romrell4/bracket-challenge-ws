@@ -78,11 +78,11 @@ def get_tournament(tournament_id):
     return get_one(Tournament, "SELECT * FROM tournaments WHERE tournament_id = %s", tournament_id)
 
 def create_tournament(tournament):
-    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id) VALUES (%s, %s)", tournament.get("name"), tournament.get("master_bracket_id"))
+    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id, image_url) VALUES (%s, %s, %s)", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("image_url"))
     return get_tournament(tournament_id)
 
 def update_tournament(tournament_id, tournament):
-    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s WHERE tournament_id = %s", tournament.get("name"), tournament.get("master_bracket_id"), tournament_id)
+    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s, image_url = %s WHERE tournament_id = %s", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("image_url"), tournament_id)
     return get_tournament(tournament_id)
 
 def delete_tournament(tournament_id):
