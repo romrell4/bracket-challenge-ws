@@ -38,17 +38,22 @@ def get_body(response):
     return json.loads(response["body"])
 
 def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None):
-
     if player_ids is None:
         # creates new players
-        player_ids = []
+        players = []
         for i in range(int(math.pow(2, rounds))):
-            player = {"name": "player" + str(i + 1)}
-            if commit_to_database:
-                player = da.create_player(player)
-            else:
+            player = {"name": "_player" + str(i + 1)}
+            if not commit_to_database:
                 player["player_id"] = i + 1
-            player_ids.append(player["player_id"])
+            players.append(player)
+
+        if commit_to_database:
+            # this creates players and appends all their ids to player_ids
+            da.create_players(players)
+            player_ids = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
+        else:
+            # This puts only the players' ids into player_ids
+            player_ids = [player["player_id"] for player in players]
     else:
         # makes sure that they passed in enough players to create the tournament
         assert len(player_ids) == int(math.pow(2, rounds))
@@ -301,7 +306,7 @@ class MyTest(unittest.TestCase):
         bracket, player_ids = create_bracket(rounds, True)
         tournament_id = bracket["tournament_id"]
         bracket_id = bracket["bracket_id"]
-        full_bracket, player_ids_full_bracket = create_bracket(rounds, False)
+        full_bracket, player_ids = create_bracket(rounds, False, player_ids = player_ids)
         try:
             bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournament_id": tournament_id, "bracketId": bracket_id}))
 
@@ -363,8 +368,6 @@ class MyTest(unittest.TestCase):
             da.delete_tournament(full_bracket["tournament_id"])
             da.delete_tournament(tournament_id)
             for player_id in player_ids:
-                da.delete_player(player_id)
-            for player_id in player_ids_full_bracket:
                 da.delete_player(player_id)
 
     def test_create_bracket_method(self):
@@ -436,11 +439,11 @@ class MyTest(unittest.TestCase):
                     assert "player2_id" not in bracket["rounds"][round][match]
 
         # Test using the pre-created player_ids
-        player_ids_2 = []
+        players = []
         for i in range(int(math.pow(2, rounds))):
-            player = {"name": "player" + str(i + 1)}
-            player = da.create_player(player)
-            player_ids_2.append(player["player_id"])
+            players.append({"name": "_player" + str(i + 1)})
+        da.create_players(players)
+        player_ids_2 = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
 
         bracket, player_ids = create_bracket(rounds, False, True, player_ids_2)
 
