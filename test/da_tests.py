@@ -14,6 +14,7 @@ class DaTest(unittest.TestCase):
         self.run_simple_tests(da.get_players, da.create_player, da.update_player, da.delete_player, "player_id", dict1, dict2)
 
         # test batch insert of players
+        assert len([player for player in da.get_players() if player["name"].startswith("test")]) == 0
         da.create_players([dict1, dict2])
         players = da.get_players()
         results = [player for player in players if player["name"].startswith("test")]

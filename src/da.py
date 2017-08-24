@@ -58,7 +58,7 @@ def create_players(players):
     args = []
     for player in players:
         values.append("(%s)")
-        args += [player.get("name")]
+        args.append(player.get("name"))
     sql += ", ".join(values)
     execute(sql, *args)
 

@@ -50,8 +50,7 @@ def create_bracket(rounds, only_first_round, commit_to_database = True, player_i
         if commit_to_database:
             # this creates players and appends all their ids to player_ids
             da.create_players(players)
-            players = da.get_players()
-            player_ids = [player["player_id"] for player in players if player["name"].startswith("_player")]
+            player_ids = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
         else:
             # This puts only the players' ids into player_ids
             player_ids = [player["player_id"] for player in players]
@@ -444,8 +443,7 @@ class MyTest(unittest.TestCase):
         for i in range(int(math.pow(2, rounds))):
             players.append({"name": "_player" + str(i + 1)})
         da.create_players(players)
-        players = da.get_players()
-        player_ids_2 = [player["player_id"] for player in players if player["name"].startswith("_player")]
+        player_ids_2 = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
 
         bracket, player_ids = create_bracket(rounds, False, True, player_ids_2)
 
