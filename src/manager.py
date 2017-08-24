@@ -81,9 +81,8 @@ class Manager:
                         match["player2_id"] = player_look_up[match["player2_name"]]
 
             # creates the bracket and matches
-            bracket["tournament_id"] = tournament_id
-            bracket["name"] = tournament["name"] + " - Results"
-            new_bracket_id = self.create_bracket_and_matches(bracket)
+            bracket_to_create = {"tournament_id": tournament_id, "name": tournament["name"] + " - Results", "rounds": bracket["rounds"]}
+            new_bracket_id = self.create_bracket_and_matches(bracket_to_create)
             tournament["master_bracket_id"] = new_bracket_id
             da.update_tournament(tournament["tournament_id"], tournament)
             return self.get_bracket(new_bracket_id)
@@ -94,10 +93,8 @@ class Manager:
 
         # create the users bracket
         master = self.get_bracket(tournament["master_bracket_id"])
-        bracket["user_id"] = self.user["user_id"]
-        bracket["tournament_id"] = tournament["tournament_id"]
-        bracket["rounds"] = master["rounds"]
-        new_bracket_id = self.create_bracket_and_matches(bracket)
+        bracket_to_create = {"tournament_id": tournament_id, "name": bracket["name"], "user_id": self.user["user_id"], "rounds": master["rounds"]}
+        new_bracket_id = self.create_bracket_and_matches(bracket_to_create)
         return self.get_bracket(new_bracket_id)
 
     def update_bracket(self, bracket_id, bracket):

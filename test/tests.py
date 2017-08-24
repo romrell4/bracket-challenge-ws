@@ -247,12 +247,6 @@ class MyTest(unittest.TestCase):
                 },
             ]
         ]}
-        tournament = da.create_tournament({"name": "Test"})
-        tournament_id = tournament["tournament_id"]
-
-        # test with Admin privileges with all new players
-        EVENT["headers"]["Token"] = properties.admin_token
-
         bracket_with_names = {"name": "Master", "rounds": [
             [
                 {
@@ -275,11 +269,29 @@ class MyTest(unittest.TestCase):
                 },
             ]
         ]}
-        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket_with_names))
-        EVENT["headers"]["Token"] = properties.test_token
+        tournament = da.create_tournament({"name": "Test"})
+        tournament_id = tournament["tournament_id"]
 
         try:
-            # Still testing with Admin privileges with all new players
+            # Invalid  bracket
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id})
+            assert response["statusCode"] == 400
+
+            # Invalid tournamentId
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0}, body = json.dumps(bracket))
+            assert response["statusCode"] == 400
+
+            # Test without Admin privileges (creating a master bracket)
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
+            assert response["statusCode"] == 403
+
+            # test with admin privileges trying to create a blank master bracket
+            EVENT["headers"]["Token"] = properties.admin_token
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps({"name": "test"}))
+            assert response["statusCode"] == 400
+
+            # test with Admin privileges with all new players
+            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket_with_names))
             assert_success(response)
             tournament = da.get_tournament(tournament_id)
             master_id = tournament["master_bracket_id"]
@@ -298,23 +310,6 @@ class MyTest(unittest.TestCase):
 
             tournament["master_bracket_id"] = None
             da.update_tournament(tournament_id, tournament)
-
-            # Invalid  bracket
-            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id})
-            assert response["statusCode"] == 400
-
-            # Invalid tournamentId
-            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": 0}, body = json.dumps(bracket))
-            assert response["statusCode"] == 400
-
-            # Test without Admin privileges (creating a master bracket)
-            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
-            assert response["statusCode"] == 403
-
-            # test with admin privileges trying to create a blank master bracket
-            EVENT["headers"]["Token"] = properties.admin_token
-            response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps({"name": "test"}))
-            assert response["statusCode"] == 400
 
             # test with Admin privileges with all existing players
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
@@ -348,6 +343,8 @@ class MyTest(unittest.TestCase):
 
         finally:
             da.delete_tournament(tournament_id)
+            for player_id in player_ids:
+                da.delete_player(player_id)
 
     def test_update_bracket(self):
         rounds = 2
