@@ -52,11 +52,38 @@ class Manager:
             if self.user["admin"] == 0:
                 raise ServiceException("You do not have permission to create this bracket", 403)
 
-            # TODO: Think about auto generating empty matches
+            # Can't create a master bracket with no rounds
+            if "rounds" not in bracket:
+                raise ServiceException("Cannot create a bracket with no rounds", 400)
 
             # If user is an admin allow them to create the master bracket
-            bracket_to_create = {"tournament_id": tournament["tournament_id"], "name": tournament["name"] + " - Results"}
-            new_bracket_id = self.create_and_fill_bracket(bracket_to_create, bracket)
+            # Finds and creates new players
+            new_players = []
+            for round in bracket["rounds"]:
+                for match in round:
+                    if "player1_name" in match:
+                        new_players.append({"name": match["player1_name"]})
+                    if "player2_name" in match:
+                        new_players.append({"name": match["player2_name"]})
+            if len(new_players) != 0:
+                da.create_players(new_players)
+
+            # Looks up and adds player_ids to matches
+            all_players = da.get_players()
+            player_look_up = {}
+            for player in all_players:
+                player_look_up[player["name"]] = player["player_id"]
+            for round in bracket["rounds"]:
+                for match in round:
+                    if "player1_name" in match:
+                        match["player1_id"] = player_look_up[match["player1_name"]]
+                    if "player2_name" in match:
+                        match["player2_id"] = player_look_up[match["player2_name"]]
+
+            # creates the bracket and matches
+            bracket["tournament_id"] = tournament_id
+            bracket["name"] = tournament["name"] + " - Results"
+            new_bracket_id = self.create_bracket_and_matches(bracket)
             tournament["master_bracket_id"] = new_bracket_id
             da.update_tournament(tournament["tournament_id"], tournament)
             return self.get_bracket(new_bracket_id)
@@ -66,14 +93,12 @@ class Manager:
             raise ServiceException("You have already created a bracket", 412)
 
         # create the users bracket
-        bracket_to_create = {"user_id": self.user["user_id"], "tournament_id": tournament["tournament_id"], "name": bracket["name"]}
         master = self.get_bracket(tournament["master_bracket_id"])
-        new_bracket_id = self.create_and_fill_bracket(bracket_to_create, master)
+        bracket["user_id"] = self.user["user_id"]
+        bracket["tournament_id"] = tournament["tournament_id"]
+        bracket["rounds"] = master["rounds"]
+        new_bracket_id = self.create_bracket_and_matches(bracket)
         return self.get_bracket(new_bracket_id)
-
-    def create_bracket_and_matches(self, bracket):
-        new_bracket_id = da.create_bracket(bracket)["bracket_id"]
-        da.create_matches(new_bracket_id, bracket["rounds"])
 
     def update_bracket(self, bracket_id, bracket):
         if bracket is None or bracket["name"] is None or bracket["rounds"] is None:
@@ -137,12 +162,7 @@ class Manager:
         return rounds
 
     @staticmethod
-    def create_and_fill_bracket(bracket_to_create, bracket_to_copy):
-        if "rounds" not in bracket_to_copy:
-            raise ServiceException("Cannot copy a bracket with no rounds", 400)
-        new_bracket = da.create_bracket(bracket_to_create)
-        for rounds in bracket_to_copy["rounds"]:
-            for match in rounds:
-                match["bracket_id"] = new_bracket["bracket_id"]
-                da.create_match(match)
-        return new_bracket["bracket_id"]
+    def create_bracket_and_matches(bracket):
+        new_bracket_id = da.create_bracket(bracket)["bracket_id"]
+        da.create_matches(new_bracket_id, bracket["rounds"])
+        return new_bracket_id

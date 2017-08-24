@@ -250,7 +250,55 @@ class MyTest(unittest.TestCase):
         tournament = da.create_tournament({"name": "Test"})
         tournament_id = tournament["tournament_id"]
 
+        # test with Admin privileges with all new players
+        EVENT["headers"]["Token"] = properties.admin_token
+
+        bracket_with_names = {"name": "Master", "rounds": [
+            [
+                {
+                    "round": 1,
+                    "position": 1,
+                    "player1_name": "_player1",
+                    "player2_name": "_player2"
+                },
+                {
+                    "round": 1,
+                    "position": 2,
+                    "player1_name": "_player3",
+                    "player2_name": "_player4"
+                }
+            ],
+            [
+                {
+                    "round": 2,
+                    "position": 1
+                },
+            ]
+        ]}
+        response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket_with_names))
+        EVENT["headers"]["Token"] = properties.test_token
+
         try:
+            # Still testing with Admin privileges with all new players
+            assert_success(response)
+            tournament = da.get_tournament(tournament_id)
+            master_id = tournament["master_bracket_id"]
+            assert master_id is not None
+            master_bracket = da.get_bracket(master_id)
+            assert master_bracket is not None
+            assert master_bracket["name"] != bracket["name"]
+            player_ids = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
+            assert len(player_ids) == 4
+            body = get_body(response)
+            for i in range(len(body["rounds"])):
+                for match in body["rounds"][i]:
+                    if i == 0:
+                        assert match["player1_id"] in player_ids
+                        assert match["player2_id"] in player_ids
+
+            tournament["master_bracket_id"] = None
+            da.update_tournament(tournament_id, tournament)
+
             # Invalid  bracket
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id})
             assert response["statusCode"] == 400
@@ -268,7 +316,7 @@ class MyTest(unittest.TestCase):
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps({"name": "test"}))
             assert response["statusCode"] == 400
 
-            # test with Admin privileges
+            # test with Admin privileges with all existing players
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert_success(response)
             tournament = da.get_tournament(tournament_id)
@@ -347,7 +395,7 @@ class MyTest(unittest.TestCase):
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
             assert_success(response)
             assert get_body(response)["name"] == "test2"
-            
+
             # Valid test with one
             bracket["rounds"][0][0]["winner_id"] = bracket["rounds"][0][0]["player1_id"]
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", "PUT", {"tournament_id": tournament_id, "bracketId": bracket_id}, body = json.dumps(bracket))
