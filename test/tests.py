@@ -539,13 +539,6 @@ class MyTest(unittest.TestCase):
             assert "score" in body
             assert body["score"] == 0
 
-            # if they already have a score
-            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]})
-            assert_success(response)
-            body = get_body(response)
-            assert "score" in body
-            assert body["score"] == 0
-
             # test one winner in each round
             tournament["master_bracket_id"] = full_master_bracket["bracket_id"]
             da.update_tournament(tournament["tournament_id"], tournament)
