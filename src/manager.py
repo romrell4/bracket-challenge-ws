@@ -103,7 +103,7 @@ class Manager:
 
         original_bracket = self.get_bracket(bracket_id)
         original_bracket["name"] = bracket["name"]
-        
+
         original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
         if len(original_rounds) != len(rounds):
             raise ServiceException("Invalid bracket size passed in. {} != {}".format(len(original_rounds), len(rounds)), 400)
@@ -130,6 +130,7 @@ class Manager:
         if bracket is None:
             raise ServiceException("No bracket existed for user_id: {} in tournament_id: {}".format(tournament_id, self.user["user_id"]), 404)
         bracket["rounds"] = self.get_rounds(bracket["bracket_id"])
+        bracket = self.get_score(bracket)
         return bracket
 
     def get_bracket(self, bracket_id):
@@ -137,6 +138,28 @@ class Manager:
         if bracket is None:
             raise ServiceException("This bracket does not exist", 400)
         bracket["rounds"] = self.get_rounds(bracket_id)
+        bracket = self.get_score(bracket)
+        return bracket
+
+    def get_score(self, bracket):
+        tournament = da.get_tournament(bracket["tournament_id"])
+        master_bracket = da.get_bracket(tournament["master_bracket_id"])
+
+        # this if is necessary to not break the code if the master bracket has not been created yet (I think this may only be applicable for
+        # tests because people will not be able to get their bracket if the master bracket hasn't been created but we do this in tests)
+        if master_bracket is None:
+            return bracket
+
+        master_bracket["rounds"] = self.get_rounds(master_bracket["bracket_id"])
+        master_matches = []
+        user_matches = []
+        for round in master_bracket["rounds"]:
+            master_matches += round
+        for round in bracket["rounds"]:
+            user_matches += round
+        for user_match, master_match in zip(user_matches, master_matches):
+            if user_match["winner_id"] == master_match["winner_id"] and master_match["winner_id"] is not None:
+                bracket["score"] += master_match["round"]
         return bracket
 
     @staticmethod
