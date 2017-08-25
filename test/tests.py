@@ -518,12 +518,17 @@ class MyTest(unittest.TestCase):
         # change this number to change the rounds
         rounds = 3
         master_bracket, player_ids = create_bracket(rounds, True, True)
+
+        # This updates the tournament so that it has a master bracket
         tournament = da.get_tournament(master_bracket["tournament_id"])
         tournament["master_bracket_id"] = master_bracket["bracket_id"]
         da.update_tournament(tournament["tournament_id"], tournament)
+
         test_bracket, player_ids = create_bracket(rounds, True, True, player_ids, tournament)
         full_master_bracket, player_ids = create_bracket(rounds, False, True, player_ids, tournament)
         full_test_bracket, player_ids = create_bracket(rounds, False, True, player_ids, tournament)
+
+        # Getting the test_bracket back through the handler because then the "rounds" will include the match_ids which is necessary for one of the tests
         test_bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]}))
 
         try:
@@ -537,26 +542,27 @@ class MyTest(unittest.TestCase):
             # test one winner in each round
             tournament["master_bracket_id"] = full_master_bracket["bracket_id"]
             da.update_tournament(tournament["tournament_id"], tournament)
-            for round in range(rounds):
-                test_bracket["rounds"][round][0]["winner_id"] = full_master_bracket["rounds"][round][0]["winner_id"]
-                da.update_match(test_bracket["rounds"][round][0]["match_id"], test_bracket["rounds"][round][0])
+            for test_round, master_round in zip(test_bracket["rounds"], full_master_bracket["rounds"]):
+                test_round[0]["winner_id"] = master_round[0]["winner_id"]
+                da.update_match(test_round[0]["match_id"], test_round[0])
                 response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]})
                 assert_success(response)
                 body = get_body(response)
                 assert "score" in body
-                assert body["score"] == round + 1
-                test_bracket["rounds"][round][0]["winner_id"] = None
-                da.update_match(test_bracket["rounds"][round][0]["match_id"], test_bracket["rounds"][round][0])
+                assert body["score"] == master_round[0]["round"]
+                test_round[0]["winner_id"] = None
+                da.update_match(test_round[0]["match_id"], test_round[0])
 
             # test a bracket with all winners
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": full_test_bracket["bracket_id"]})
             assert_success(response)
             body = get_body(response)
             assert "score" in body
+
+            # This get's total score for all correct
             score = 0
             for round in range(len(body["rounds"])):
                 score += (round + 1) * len(body["rounds"][round])
-            print(score)
             assert body["score"] == score
 
 

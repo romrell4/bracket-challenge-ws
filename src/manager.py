@@ -103,7 +103,7 @@ class Manager:
 
         original_bracket = self.get_bracket(bracket_id)
         original_bracket["name"] = bracket["name"]
-        
+
         original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
         if len(original_rounds) != len(rounds):
             raise ServiceException("Invalid bracket size passed in. {} != {}".format(len(original_rounds), len(rounds)), 400)
@@ -151,15 +151,15 @@ class Manager:
             return bracket
 
         master_bracket["rounds"] = self.get_rounds(master_bracket["bracket_id"])
-        master_rounds = []
-        user_rounds = []
+        master_matches = []
+        user_matches = []
         for round in master_bracket["rounds"]:
-            master_rounds += round
+            master_matches += round
         for round in bracket["rounds"]:
-            user_rounds += round
-        for match in range(len(user_rounds)):
-            if user_rounds[match]["winner_id"] == master_rounds[match]["winner_id"] and master_rounds[match]["winner_id"] != None:
-                bracket["score"] += master_rounds[match]["round"]
+            user_matches += round
+        for user_match, master_match in zip(user_matches, master_matches):
+            if user_match["winner_id"] == master_match["winner_id"] and master_match["winner_id"] is not None:
+                bracket["score"] += master_match["round"]
         return bracket
 
     @staticmethod
