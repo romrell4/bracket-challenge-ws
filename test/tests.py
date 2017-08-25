@@ -214,8 +214,8 @@ class MyTest(unittest.TestCase):
 
         # non empty tournament
         other_user = da.create_user({"username": "test_user", "name": "test"})
-        bracket1 = da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 20})
-        bracket2 = da.create_bracket({"user_id": other_user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test", "score": 20})
+        bracket1 = da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
+        bracket2 = da.create_bracket({"user_id": other_user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
 
         try:
             response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
@@ -564,7 +564,6 @@ class MyTest(unittest.TestCase):
             for round in range(len(body["rounds"])):
                 score += (round + 1) * len(body["rounds"][round])
             assert body["score"] == score
-
 
         finally:
             da.delete_tournament(tournament["tournament_id"])

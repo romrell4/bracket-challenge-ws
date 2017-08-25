@@ -142,6 +142,7 @@ class Manager:
         return bracket
 
     def get_score(self, bracket):
+        bracket["score"] = 0
         tournament = da.get_tournament(bracket["tournament_id"])
         master_bracket = da.get_bracket(tournament["master_bracket_id"])
 
