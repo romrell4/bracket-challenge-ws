@@ -448,6 +448,9 @@
 				"name": {
 					"type": "string"
 				},
+				"score": {
+					"type": "integer"
+				},
 				"rounds": {
 					"type": "array",
 					"items": {

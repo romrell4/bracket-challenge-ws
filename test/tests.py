@@ -37,7 +37,7 @@ def assert_success(response):
 def get_body(response):
     return json.loads(response["body"])
 
-def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None):
+def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None, tournament = None):
     if player_ids is None:
         # creates new players
         players = []
@@ -58,10 +58,13 @@ def create_bracket(rounds, only_first_round, commit_to_database = True, player_i
         # makes sure that they passed in enough players to create the tournament
         assert len(player_ids) == int(math.pow(2, rounds))
 
-    tournament = {"name": "test"}
+    if tournament is None:
+        tournament = {"name": "test"}
+        if commit_to_database:
+            tournament = da.create_tournament(tournament)
+
     bracket = {"name": "test"}
     if commit_to_database:
-        tournament = da.create_tournament(tournament)
         bracket["tournament_id"] = tournament["tournament_id"]
         bracket = da.create_bracket(bracket)
 
@@ -509,6 +512,57 @@ class MyTest(unittest.TestCase):
         finally:
             da.delete_tournament(bracket["tournament_id"])
             for player_id in player_ids_2:
+                da.delete_player(player_id)
+
+    def test_scores(self):
+        # change this number to change the rounds
+        rounds = 3
+        master_bracket, player_ids = create_bracket(rounds, True, True)
+        tournament = da.get_tournament(master_bracket["tournament_id"])
+        tournament["master_bracket_id"] = master_bracket["bracket_id"]
+        da.update_tournament(tournament["tournament_id"], tournament)
+        test_bracket, player_ids = create_bracket(rounds, True, True, player_ids, tournament)
+        full_master_bracket, player_ids = create_bracket(rounds, False, True, player_ids, tournament)
+        full_test_bracket, player_ids = create_bracket(rounds, False, True, player_ids, tournament)
+        test_bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]}))
+
+        try:
+            # test a tournament with no winners yet
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]})
+            assert_success(response)
+            body = get_body(response)
+            assert "score" in body
+            assert body["score"] == 0
+
+            # test one winner in each round
+            tournament["master_bracket_id"] = full_master_bracket["bracket_id"]
+            da.update_tournament(tournament["tournament_id"], tournament)
+            for round in range(rounds):
+                test_bracket["rounds"][round][0]["winner_id"] = full_master_bracket["rounds"][round][0]["winner_id"]
+                da.update_match(test_bracket["rounds"][round][0]["match_id"], test_bracket["rounds"][round][0])
+                response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]})
+                assert_success(response)
+                body = get_body(response)
+                assert "score" in body
+                assert body["score"] == round + 1
+                test_bracket["rounds"][round][0]["winner_id"] = None
+                da.update_match(test_bracket["rounds"][round][0]["match_id"], test_bracket["rounds"][round][0])
+
+            # test a bracket with all winners
+            response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": full_test_bracket["bracket_id"]})
+            assert_success(response)
+            body = get_body(response)
+            assert "score" in body
+            score = 0
+            for round in range(len(body["rounds"])):
+                score += (round + 1) * len(body["rounds"][round])
+            print(score)
+            assert body["score"] == score
+
+
+        finally:
+            da.delete_tournament(tournament["tournament_id"])
+            for player_id in player_ids:
                 da.delete_player(player_id)
 
     def tearDown(self):
