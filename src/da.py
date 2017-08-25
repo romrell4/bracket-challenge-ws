@@ -101,10 +101,7 @@ def get_bracket(bracket_id = None, tournament_id = None, user_id = None):
     return None
 
 def create_bracket(bracket):
-    sql = "INSERT INTO brackets (user_id, tournament_id, name) VALUES (%s, %s, %s)"
-    args = [bracket.get("user_id"), bracket.get("tournament_id"), bracket.get("name")]
-
-    bracket_id = insert(sql, *args)
+    bracket_id = insert("INSERT INTO brackets (user_id, tournament_id, name) VALUES (%s, %s, %s)", bracket.get("user_id"), bracket.get("tournament_id"), bracket.get("name"))
     return get_bracket(bracket_id)
 
 def update_bracket(bracket_id, bracket):
