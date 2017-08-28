@@ -157,6 +157,25 @@ def update_match(match_id, match):
 def delete_match(match_id):
     execute("DELETE FROM matches WHERE match_id = %s", match_id)
 
+### SCORES ###
+
+def get_score(bracket_id):
+    return int(get_one(Score, """select SUM(match_scores.score) from (
+        select IF(my_m.winner_id = ma_m.winner_id, 1, 0) * my_m.round as score
+        from matches my_m
+        join brackets my_b
+            on my_m.bracket_id = my_b.bracket_id
+        join tournaments t
+            on t.tournament_id = my_b.tournament_id
+        join brackets ma_b
+            on t.master_bracket_id = ma_b.bracket_id
+        join matches ma_m
+            on ma_m.bracket_id = ma_b.bracket_id
+            and my_m.position = ma_m.position
+            and my_m.round = ma_m.round
+        where my_m.bracket_id = %s
+        ) match_scores""", bracket_id)["score"])
+
 ### UTILS ###
 
 def get_list(klass, sql, *args):

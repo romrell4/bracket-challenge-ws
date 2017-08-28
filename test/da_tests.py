@@ -109,6 +109,21 @@ class DaTest(unittest.TestCase):
             da.delete_player(player2["player_id"])
             da.delete_user(user["user_id"])
 
+    def test_score(self):
+        tournament = da.create_tournament({"name": "test"})
+        tournament_id = tournament["tournament_id"]
+        master_bracket = da.create_bracket({"tournament_id": tournament_id, "name": "master"})
+        tournament["master_bracket_id"] = master_bracket["bracket_id"]
+        da.update_tournament(tournament_id, tournament)
+        test_bracket = da.create_bracket({"tournament_id": tournament_id, "name": "test"})
+        da.create_matches(master_bracket["bracket_id"], [[{"round": 1, "position": 1, "winner_id": 1}, {"round": 1, "position": 2, "winner_id": 2}], [{"round": 2, "position": 1, "winner_id": 1}]])
+        da.create_matches(test_bracket["bracket_id"], [[{"round": 1, "position": 1, "winner_id": 1}, {"round": 1, "position": 2, "winner_id": 2}], [{"round": 2, "position": 1, "winner_id": 1}]])
+        try:
+            score = da.get_score(test_bracket["bracket_id"])
+            assert score == 4
+        finally:
+            da.delete_tournament(tournament_id)
+
     @staticmethod
     def run_simple_tests(get_all, create, update, delete, id_key, create_dict, update_dict):
         # Test get all

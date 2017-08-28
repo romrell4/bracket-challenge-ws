@@ -141,30 +141,16 @@ class Manager:
 
     def fill_bracket(self, bracket):
         bracket["rounds"] = self.get_rounds(bracket["bracket_id"])
-        bracket["score"] = self.get_score(bracket)
-        return bracket
 
-    def get_score(self, bracket):
-        score = 0
-        tournament = da.get_tournament(bracket["tournament_id"])
-        master_bracket = da.get_bracket(tournament["master_bracket_id"])
-
-        # this if is necessary to not break the code if the master bracket has not been created yet (I think this may only be applicable for
+        # this first part is necessary to not break the code if the master bracket has not been created yet (I think this may only be applicable for
         # tests because people will not be able to get their bracket if the master bracket hasn't been created but we do this in tests)
-        if master_bracket is None:
-            return score
+        tournament = da.get_tournament(bracket["tournament_id"])
+        if da.get_bracket(tournament["master_bracket_id"]) is None:
+            bracket["score"] = 0
+            return bracket
 
-        master_bracket["rounds"] = self.get_rounds(master_bracket["bracket_id"])
-        master_matches = []
-        user_matches = []
-        for round in master_bracket["rounds"]:
-            master_matches += round
-        for round in bracket["rounds"]:
-            user_matches += round
-        for user_match, master_match in zip(user_matches, master_matches):
-            if user_match["winner_id"] == master_match["winner_id"] and master_match["winner_id"] is not None:
-                score += master_match["round"]
-        return score
+        bracket["score"] = da.get_score(bracket["bracket_id"])
+        return bracket
 
     @staticmethod
     def get_rounds(bracket_id):
