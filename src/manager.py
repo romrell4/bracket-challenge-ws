@@ -35,7 +35,7 @@ class Manager:
         return da.create_tournament(tournament)
 
     def get_brackets(self, tournament_id):
-        return sorted([self.fill_bracket(bracket) for bracket in da.get_brackets(tournament_id)], key = lambda bracket: bracket["score"])
+        return sorted([self.fill_bracket(bracket) for bracket in da.get_brackets(tournament_id)], key = lambda bracket: bracket["score"], reverse = True)
 
     def create_bracket(self, tournament_id, bracket):
         if bracket is None:
