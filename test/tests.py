@@ -350,6 +350,7 @@ class MyTest(unittest.TestCase):
             assert response["statusCode"] == 412
 
         finally:
+            EVENT["headers"]["Token"] = properties.test_token
             da.delete_tournament(tournament_id)
             for player_id in player_ids:
                 da.delete_player(player_id)
