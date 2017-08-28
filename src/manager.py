@@ -35,7 +35,7 @@ class Manager:
         return da.create_tournament(tournament)
 
     def get_brackets(self, tournament_id):
-        return da.get_brackets(tournament_id)
+        return [self.fill_bracket(bracket) for bracket in da.get_brackets(tournament_id)]
 
     def create_bracket(self, tournament_id, bracket):
         if bracket is None:
@@ -129,27 +129,30 @@ class Manager:
         bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
         if bracket is None:
             raise ServiceException("No bracket existed for user_id: {} in tournament_id: {}".format(tournament_id, self.user["user_id"]), 404)
-        bracket["rounds"] = self.get_rounds(bracket["bracket_id"])
-        bracket = self.get_score(bracket)
+        bracket = self.fill_bracket(bracket)
         return bracket
 
     def get_bracket(self, bracket_id):
         bracket = da.get_bracket(bracket_id)
         if bracket is None:
             raise ServiceException("This bracket does not exist", 400)
-        bracket["rounds"] = self.get_rounds(bracket_id)
-        bracket = self.get_score(bracket)
+        bracket = self.fill_bracket(bracket)
+        return bracket
+
+    def fill_bracket(self, bracket):
+        bracket["rounds"] = self.get_rounds(bracket["bracket_id"])
+        bracket["score"] = self.get_score(bracket)
         return bracket
 
     def get_score(self, bracket):
-        bracket["score"] = 0
+        score = 0
         tournament = da.get_tournament(bracket["tournament_id"])
         master_bracket = da.get_bracket(tournament["master_bracket_id"])
 
         # this if is necessary to not break the code if the master bracket has not been created yet (I think this may only be applicable for
         # tests because people will not be able to get their bracket if the master bracket hasn't been created but we do this in tests)
         if master_bracket is None:
-            return bracket
+            return score
 
         master_bracket["rounds"] = self.get_rounds(master_bracket["bracket_id"])
         master_matches = []
@@ -160,8 +163,8 @@ class Manager:
             user_matches += round
         for user_match, master_match in zip(user_matches, master_matches):
             if user_match["winner_id"] == master_match["winner_id"] and master_match["winner_id"] is not None:
-                bracket["score"] += master_match["round"]
-        return bracket
+                score += master_match["round"]
+        return score
 
     @staticmethod
     def get_rounds(bracket_id):
