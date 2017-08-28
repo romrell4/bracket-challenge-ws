@@ -220,7 +220,12 @@ class MyTest(unittest.TestCase):
         try:
             response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
             assert_success(response)
-            assert len(get_body(response)) == 2
+            body = get_body(response)
+            assert len(body) == 2
+            for bracket in body:
+                assert "rounds" in bracket
+                assert "score" in bracket
+
         finally:
             da.delete_bracket(bracket1["bracket_id"])
             da.delete_bracket(bracket2["bracket_id"])
