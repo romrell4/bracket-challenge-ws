@@ -24,7 +24,7 @@ class DaTest(unittest.TestCase):
 
     def test_tournaments(self):
         dict1 = {"name": "test"}
-        dict2 = {"name": "test", "master_bracket_id": 0, "image_url": "test.com"}
+        dict2 = {"name": "test", "master_bracket_id": 0, "image_url": "test.com", "active": 1}
         self.run_simple_tests(da.get_tournaments, da.create_tournament, da.update_tournament, da.delete_tournament, "tournament_id", dict1, dict2)
 
     def test_brackets(self):
