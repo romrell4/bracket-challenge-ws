@@ -144,7 +144,66 @@
 					"contentHandling": "CONVERT_TO_TEXT",
 					"type": "aws_proxy"
 				}
-
+			}
+		},
+		"/tournaments/{tournamentId}": {
+			"put": {
+				"summary": "Update a tournament",
+				"produces": [
+					"application/json"
+				],
+				"consumes": [
+					"application/json"
+				],
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"in": "path",
+						"required": true,
+						"type": "integer"
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/definitions/tournament"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Tournament",
+						"schema": {
+							"$ref": "#/definitions/tournament"
+						}
+					},
+					"400": {
+						"description": "Invalid parameters",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					},
+					"403": {
+						"description": "User does not have permission to update a tournament",
+						"schema": {
+							"$ref": "#/definitions/error"
+						}
+					}
+				},
+				"x-amazon-apigateway-integration": {
+					"responses": {
+						"default": {
+							"statusCode": "200"
+						}
+					},
+					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
+					"passthroughBehavior": "when_no_match",
+					"httpMethod": "POST",
+					"contentHandling": "CONVERT_TO_TEXT",
+					"type": "aws_proxy"
+				}
 			}
 		},
 		"/tournaments/{tournamentId}/brackets": {

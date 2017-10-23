@@ -34,6 +34,15 @@ class Manager:
             raise ServiceException("You do not have permission to create a tournament", 403)
         return da.create_tournament(tournament)
 
+    def update_tournament(self, tournament_id, tournament):
+        # Check for valid parameters
+        if tournament_id is None or tournament is None:
+            raise ServiceException("Invalid parameters passed in", 400)
+        # Make sure the user is an admin
+        if self.user["admin"] == 0:
+            raise ServiceException("You do not have permission to edit a tournament", 403)
+        return da.update_tournament(tournament_id, tournament)
+
     def get_brackets(self, tournament_id):
         return sorted([self.fill_bracket(bracket) for bracket in da.get_brackets(tournament_id)], key = lambda bracket: bracket["score"], reverse = True)
 
