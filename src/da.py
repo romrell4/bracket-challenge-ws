@@ -72,7 +72,7 @@ def delete_player(player_id):
 ### TOURNAMENTS ###
 
 def get_tournaments():
-    return get_list(Tournament, "SELECT * FROM tournaments")
+    return get_list(Tournament, "SELECT * FROM tournaments order by tournament_id desc")
 
 def get_tournament(tournament_id):
     return get_one(Tournament, "SELECT * FROM tournaments WHERE tournament_id = %s", tournament_id)
