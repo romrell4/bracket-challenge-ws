@@ -34,6 +34,11 @@ class Manager:
             raise ServiceException("You do not have permission to create a tournament", 403)
         return da.create_tournament(tournament)
 
+    def get_tournament(self, tournament_id):
+        if tournament_id is None:
+            raise ServiceException("Invalid parameters passed in", 400)
+        return da.get_tournament(tournament_id)
+
     def update_tournament(self, tournament_id, tournament):
         # Check for valid parameters
         if tournament_id is None or tournament is None:
@@ -65,7 +70,6 @@ class Manager:
             if "rounds" not in bracket:
                 raise ServiceException("Cannot create a bracket with no rounds", 400)
 
-            # If user is an admin allow them to create the master bracket
             # Finds and creates new players
             new_players = []
             for round in bracket["rounds"]:
@@ -111,6 +115,9 @@ class Manager:
             raise ServiceException("Invalid bracket passed in", 400)
 
         original_bracket = self.get_bracket(bracket_id)
+        if original_bracket["user_id"] != self.user["user_id"] and self.user["admin"] == 0:
+            raise ServiceException("You do not have permission to update this bracket", 403)
+
         original_bracket["name"] = bracket["name"]
 
         original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
