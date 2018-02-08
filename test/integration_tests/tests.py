@@ -96,9 +96,9 @@ def create_bracket(rounds, only_first_round, commit_to_database = True, player_i
 class MyTest(unittest.TestCase):
     def setUp(self):
         try:
-            self.user = da.create_user({"username": "test_fqxpeow_user@tfbnw.net", "name": "Test User"})
+            self.user = da.create_user({"username": properties.test_username, "name": "Test User"})
         except ServiceException:
-            self.user = da.get_user_by_username("test_fqxpeow_user@tfbnw.net")
+            self.user = da.get_user_by_username(properties.test_username)
 
     def test_login(self):
         da.delete_user(self.user["user_id"])

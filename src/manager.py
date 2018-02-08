@@ -71,27 +71,7 @@ class Manager:
                 raise ServiceException("Cannot create a bracket with no rounds", 400)
 
             # Finds and creates new players
-            new_players = []
-            for round in bracket["rounds"]:
-                for match in round:
-                    if "player1_name" in match:
-                        new_players.append({"name": match["player1_name"]})
-                    if "player2_name" in match:
-                        new_players.append({"name": match["player2_name"]})
-            if len(new_players) != 0:
-                da.create_players(new_players)
-
-            # Looks up and adds player_ids to matches
-            all_players = da.get_players()
-            player_look_up = {}
-            for player in all_players:
-                player_look_up[player["name"]] = player["player_id"]
-            for round in bracket["rounds"]:
-                for match in round:
-                    if "player1_name" in match:
-                        match["player1_id"] = player_look_up[match["player1_name"]]
-                    if "player2_name" in match:
-                        match["player2_id"] = player_look_up[match["player2_name"]]
+            self.create_new_players(bracket["rounds"])
 
             # creates the bracket and matches
             bracket_to_create = {"tournament_id": tournament_id, "name": tournament["name"] + " - Results", "rounds": bracket["rounds"]}
@@ -111,18 +91,27 @@ class Manager:
         return self.get_bracket(new_bracket_id)
 
     def update_bracket(self, bracket_id, bracket):
-        if bracket is None or bracket["name"] is None or bracket["rounds"] is None:
+        # Validate input
+        if bracket is None or bracket.get("name") is None or bracket.get("rounds") is None:
             raise ServiceException("Invalid bracket passed in", 400)
 
+        # Get actual bracket from database as a starting point
         original_bracket = self.get_bracket(bracket_id)
+
+        # You can only update a bracket if you own it, or if you're an admin
         if original_bracket["user_id"] != self.user["user_id"] and self.user["admin"] == 0:
             raise ServiceException("You do not have permission to update this bracket", 403)
 
-        original_bracket["name"] = bracket["name"]
-
+        # Validate that the new bracket's rounds match the size of the original
         original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
         if len(original_rounds) != len(rounds):
             raise ServiceException("Invalid bracket size passed in. {} != {}".format(len(original_rounds), len(rounds)), 400)
+
+        # Update the name
+        original_bracket["name"] = bracket["name"]
+
+        # Finds and creates new players
+        self.create_new_players(rounds)
 
         for original_round, round in zip(original_rounds, rounds):
             if len(original_round) != len(round):
@@ -140,6 +129,30 @@ class Manager:
 
         da.update_bracket(bracket_id, original_bracket)
         return self.get_bracket(bracket_id)
+
+    @staticmethod
+    def create_new_players(rounds):
+        new_players = []
+        for round in rounds:
+            for match in round:
+                if match.get("player1_name") is not None and match["player1_name"] not in new_players:
+                    new_players.append(match["player1_name"])
+                if match.get("player2_name") is not None and match["player2_name"] not in new_players:
+                    new_players.append(match["player2_name"])
+        if len(new_players) != 0:
+            da.create_players([{"name": player} for player in new_players])
+
+        # Looks up and adds player_ids to matches
+        all_players = da.get_players()
+        player_look_up = {}
+        for player in all_players:
+            player_look_up[player["name"]] = player["player_id"]
+        for round in rounds:
+            for match in round:
+                if match.get("player1_name") is not None:
+                    match["player1_id"] = player_look_up[match["player1_name"]]
+                if match.get("player2_name") is not None:
+                    match["player2_id"] = player_look_up[match["player2_name"]]
 
     def get_my_bracket(self, tournament_id):
         bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
