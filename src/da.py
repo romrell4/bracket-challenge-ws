@@ -80,11 +80,11 @@ def get_tournament(tournament_id):
 def create_tournament(tournament):
     if "active" not in tournament:
         tournament["active"] = 0
-    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id, image_url, active) VALUES (%s, %s, %s, %s)", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("image_url"), tournament.get("active"))
+    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id, draws_url, image_url, active) VALUES (%s, %s, %s, %s, %s)", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("draws_url"), tournament.get("image_url"), tournament.get("active"))
     return get_tournament(tournament_id)
 
 def update_tournament(tournament_id, tournament):
-    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s, image_url = %s, active = %s WHERE tournament_id = %s", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("image_url"), tournament.get("active"), tournament_id)
+    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s, image_url = %s, draws_url = %s, active = %s WHERE tournament_id = %s", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("draws_url"), tournament.get("image_url"), tournament.get("active"), tournament_id)
     return get_tournament(tournament_id)
 
 def delete_tournament(tournament_id):

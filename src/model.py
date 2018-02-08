@@ -8,7 +8,7 @@ class Player:
 
 class Tournament:
     def __init__(self, result_set):
-        [self.tournament_id, self.name, self.master_bracket_id, self.image_url, self.active] = result_set
+        [self.tournament_id, self.name, self.master_bracket_id, self.draws_url, self.image_url, self.active] = result_set
 
 class Bracket:
     def __init__(self, result_set):
