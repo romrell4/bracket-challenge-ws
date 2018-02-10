@@ -99,33 +99,54 @@ class Manager:
         original_bracket = self.get_bracket(bracket_id)
 
         # You can only update a bracket if you own it, or if you're an admin
-        if original_bracket["user_id"] != self.user["user_id"] and self.user["admin"] == 0:
+        if original_bracket.get("user_id") != self.user.get("user_id") and self.user.get("admin") == 0:
             raise ServiceException("You do not have permission to update this bracket", 403)
 
         # Validate that the new bracket's rounds match the size of the original
-        original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
+        original_rounds, rounds = original_bracket.get("rounds"), bracket.get("rounds")
         if len(original_rounds) != len(rounds):
             raise ServiceException("Invalid bracket size passed in. {} != {}".format(len(original_rounds), len(rounds)), 400)
 
         # Update the name
-        original_bracket["name"] = bracket["name"]
+        original_bracket["name"] = bracket.get("name")
 
-        # Finds and creates new players
+        # Find and create any new players in the bracket
         self.create_new_players(rounds)
 
+        # Update all of the matches
         for original_round, round in zip(original_rounds, rounds):
             if len(original_round) != len(round):
                 raise ServiceException("Invalid round size passed in. {} != {}".format(len(original_round), len(round)), 400)
 
             for original_match, match in zip(original_round, round):
                 # Only update the matches that have changed
-                if original_match["player1_id"] != match.get("player1_id") or original_match["player2_id"] != match.get("player2_id") or original_match["winner_id"] != match.get("winner_id"):
+                if original_match.get("player1_id") != match.get("player1_id") or original_match.get("player2_id") != match.get("player2_id") or \
+                        original_bracket.get("seed1") != match.get("seed1") or original_bracket.get("seed2") != match.get("seed2") or original_match.get("winner_id") != match.get("winner_id"):
                     original_match["player1_id"] = match.get("player1_id")
                     original_match["player2_id"] = match.get("player2_id")
                     original_match["seed1"] = match.get("seed1")
                     original_match["seed2"] = match.get("seed2")
                     original_match["winner_id"] = match.get("winner_id")
-                    da.update_match(original_match["match_id"], original_match)
+                    da.update_match(original_match.get("match_id"), original_match)
+
+        # If this is an update to a master bracket, update the other brackets
+        if original_bracket.get("user_id") is None:
+            # Make sure all brackets have the correct first round (this happens when someone pulls out or a qualifier gets added right before the tourney)
+            for bracket in da.get_brackets(original_bracket.get("tournament_id")):
+                if bracket.get("bracket_id") == original_bracket.get("bracket_id"): continue
+
+                # Populate all the matches
+                bracket = self.fill_bracket(bracket)
+
+                for master_match, match in zip(original_bracket.get("rounds")[0], bracket.get("rounds")[0]):
+                    # Only update matches that have changed
+                    if original_match.get("player1_id") != match.get("player1_id") or original_match.get("player2_id") != match.get("player2_id") or \
+                            original_match.get("seed1") != match.get("seed1") or original_match.get("seed2") != match.get("seed2"):
+                        match["player1_id"] = master_match.get("player1_id")
+                        match["player2_id"] = master_match.get("player2_id")
+                        match["seed1"] = master_match.get("seed1")
+                        match["seed2"] = master_match.get("seed2")
+                        da.update_match(match.get("match_id"), match)
 
         da.update_bracket(bracket_id, original_bracket)
         return self.get_bracket(bracket_id)
@@ -135,10 +156,10 @@ class Manager:
         new_players = []
         for round in rounds:
             for match in round:
-                if match.get("player1_name") is not None and match["player1_name"] not in new_players:
-                    new_players.append(match["player1_name"])
-                if match.get("player2_name") is not None and match["player2_name"] not in new_players:
-                    new_players.append(match["player2_name"])
+                if match.get("player1_name") is not None and match.get("player1_name") not in new_players:
+                    new_players.append(match.get("player1_name"))
+                if match.get("player2_name") is not None and match.get("player2_name") not in new_players:
+                    new_players.append(match.get("player2_name"))
         if len(new_players) != 0:
             da.create_players([{"name": player} for player in new_players])
 
@@ -146,13 +167,13 @@ class Manager:
         all_players = da.get_players()
         player_look_up = {}
         for player in all_players:
-            player_look_up[player["name"]] = player["player_id"]
+            player_look_up[player["name"]] = player.get("player_id")
         for round in rounds:
             for match in round:
                 if match.get("player1_name") is not None:
-                    match["player1_id"] = player_look_up[match["player1_name"]]
+                    match["player1_id"] = player_look_up[match.get("player1_name")]
                 if match.get("player2_name") is not None:
-                    match["player2_id"] = player_look_up[match["player2_name"]]
+                    match["player2_id"] = player_look_up[match.get("player2_name")]
 
     def get_my_bracket(self, tournament_id):
         bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])

@@ -56,42 +56,58 @@ class ManagerTest(TestCase):
 
             # Create master/user bracket
             master_bracket = da.create_bracket({"tournament_id": tournament_id, "name": "Test - Results"})
-            master_bracket["rounds"] = []
+            da.create_match({"bracket_id": master_bracket.get("bracket_id"), "round": 1, "position": 1})
+            master_bracket = self.manager.get_bracket(master_bracket.get("bracket_id"))
             test_bracket = da.create_bracket({"user_id": self.manager.user["user_id"], "tournament_id": tournament_id, "name": "Test"})
-            da.create_match({"bracket_id": test_bracket["bracket_id"], "round": 1, "position": 1})
-            test_bracket = self.manager.get_bracket(test_bracket["bracket_id"])
+            da.create_match({"bracket_id": test_bracket.get("bracket_id"), "round": 1, "position": 1})
+            test_bracket = self.manager.get_bracket(test_bracket.get("bracket_id"))
 
             # Test updating master as non-admin
-            e = assert_error(lambda: self.manager.update_bracket(master_bracket["bracket_id"], master_bracket))
+            e = assert_error(lambda: self.manager.update_bracket(master_bracket.get("bracket_id"), master_bracket))
             self.assertEqual(403, e.status_code)
 
             # Test updating your bracket as non-admin
             test_bracket["name"] = "New Name"
-            new_bracket = self.manager.update_bracket(test_bracket["bracket_id"], test_bracket)
-            self.assertEqual("New Name", new_bracket["name"])
+            new_bracket = self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket)
+            self.assertEqual("New Name", new_bracket.get("name"))
 
             # Test updating someone else's bracket as admin
             test_bracket["name"] = "Another New Name"
             self.become_admin()
-            new_bracket = self.manager.update_bracket(test_bracket["bracket_id"], test_bracket)
-            self.assertEqual("Another New Name", new_bracket["name"])
-
-            # Test updating master bracket as admin
-            master_bracket["name"] = "New Name"
-            new_bracket = self.manager.update_bracket(master_bracket["bracket_id"], master_bracket)
-            self.assertEqual("New Name", new_bracket["name"])
+            new_bracket = self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket)
+            self.assertEqual("Another New Name", new_bracket.get("name"))
 
             # Test updating bracket's rounds
-            self.become_tester()
             test_bracket["rounds"][0][0]["player1_id"] = 1
-            new_bracket = self.manager.update_bracket(test_bracket["bracket_id"], test_bracket)
-            self.assertEqual(1, new_bracket["rounds"][0][0]["player1_id"])
+            new_bracket = self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket)
+            self.assertEqual(1, new_bracket["rounds"][0][0].get("player1_id"))
 
             # Test updating bracket's rounds with unknown player
             test_bracket["rounds"][0][0]["player2_name"] = "Tester"
-            new_bracket = self.manager.update_bracket(test_bracket["bracket_id"], test_bracket)
-            new_player_id = new_bracket["rounds"][0][0]["player2_id"]
+            new_bracket = self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket)
+            new_player_id = new_bracket["rounds"][0][0].get("player2_id")
             self.assertIsNotNone(new_player_id)
+
+            # Test updating master bracket as admin (no first round changes)
+            master_bracket["name"] = "New Name"
+            new_bracket = self.manager.update_bracket(master_bracket.get("bracket_id"), master_bracket)
+            self.assertEqual("New Name", new_bracket["name"])
+
+            # Test updating master bracket with first round changes that should propogate
+            for field in ["player1_id", "player2_id", "seed1", "seed2"]:
+                master_bracket["rounds"][0][0][field] = 1
+                new_bracket = self.manager.update_bracket(master_bracket.get("bracket_id"), master_bracket)
+                self.assertEqual(1, new_bracket["rounds"][0][0].get(field))
+                new_bracket = self.manager.get_bracket(test_bracket.get("bracket_id"))
+                self.assertEqual(1, new_bracket["rounds"][0][0].get(field))
+
+            # Test updating master bracket with first round changes that shouldn't propogate
+            master_bracket["rounds"][0][0]["winner_id"] = 1
+            new_bracket = self.manager.update_bracket(master_bracket.get("bracket_id"), master_bracket)
+            self.assertEqual(1, new_bracket["rounds"][0][0].get("winner_id"))
+            new_bracket = self.manager.get_bracket(test_bracket.get("bracket_id"))
+            self.assertNotEqual(1, new_bracket["rounds"][0][0].get("winner_id"))
+
 
         finally:
             da.delete_tournament(tournament_id)
