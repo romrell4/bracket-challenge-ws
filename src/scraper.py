@@ -18,7 +18,7 @@ def scrape_bracket(draws_url):
     else:
         with open(draws_url) as f: html = f.read()
 
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", id = "scoresDrawTable")
 
     seeds = {}
