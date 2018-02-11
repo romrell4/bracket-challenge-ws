@@ -141,6 +141,7 @@ def create_match(match):
     return get_match(match_id)
 
 def create_matches(bracket_id, rounds):
+    if len(rounds) == 0: return
     sql = "INSERT INTO matches (bracket_id, round, position, player1_id, player2_id, seed1, seed2, winner_id) VALUES "
     values = []
     args = []
@@ -162,7 +163,7 @@ def delete_match(match_id):
 ### SCORES ###
 
 def get_score(bracket_id):
-    return int(get_one(Score, """select SUM(match_scores.score) from (
+    score = get_one(Score, """select SUM(match_scores.score) from (
         select IF(my_m.winner_id = ma_m.winner_id, 1, 0) * my_m.round as score
         from matches my_m
         join brackets my_b
@@ -176,7 +177,8 @@ def get_score(bracket_id):
             and my_m.position = ma_m.position
             and my_m.round = ma_m.round
         where my_m.bracket_id = %s
-        ) match_scores""", bracket_id)["score"])
+        ) match_scores""", bracket_id)["score"]
+    return int(score) if score is not None else 0
 
 ### UTILS ###
 

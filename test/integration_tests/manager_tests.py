@@ -7,6 +7,9 @@ import da
 
 class ManagerTest(TestCase):
     def setUp(self):
+        # Make sure the test user is in the database
+        try: da.create_user({"username": properties.test_username, "name": "Test User"})
+        except ServiceException: pass
         self.become_tester()
 
     def become_admin(self):
@@ -113,6 +116,34 @@ class ManagerTest(TestCase):
             da.delete_tournament(tournament_id)
             if new_player_id is not None:
                 da.delete_player(new_player_id)
+
+    def test_scrape_master_bracket_draws(self):
+        tournament = {"name": "Test"}
+        tournament = da.create_tournament(tournament)
+
+        try:
+            # Test an invalid tournament id
+            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(None))
+            self.assertEqual(400, e.status_code)
+
+            # Test a tournament without draws
+            tournament = {"name": "Test"}
+            tournament = da.create_tournament(tournament)
+            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
+            self.assertEqual(412, e.status_code)
+
+            # Test creating a master bracket
+            self.become_admin()
+            tournament["draws_url"] = "../test_empty_draws.html"
+            tournament = da.update_tournament(tournament.get("tournament_id"), tournament)
+            master_bracket = self.manager.scrape_master_bracket_draws(tournament.get("tournament_id"))
+            self.assertEqual(master_bracket["rounds"], [])
+
+            # Test updating a master bracket
+            master_bracket = self.manager.scrape_master_bracket_draws(tournament.get("tournament_id"))
+            self.assertEqual(master_bracket["rounds"], [])
+        finally:
+            da.delete_tournament(tournament.get("tournament_id"))
 
 def assert_error(statement):
     try:

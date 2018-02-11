@@ -1,4 +1,5 @@
 import da
+import scraper
 
 from service_exception import ServiceException
 
@@ -48,6 +49,26 @@ class Manager:
             raise ServiceException("You do not have permission to edit a tournament", 403)
         return da.update_tournament(tournament_id, tournament)
 
+    def scrape_master_bracket_draws(self, tournament_id):
+        # Check for valid parameters
+        tournament = da.get_tournament(tournament_id)
+        if tournament is None:
+            raise ServiceException("Invalid parameters passed in", 400)
+        elif tournament.get("draws_url") is None:
+            raise ServiceException("The draws are not yet attached to this tournament. Unable to update", 412)
+
+        bracket = scraper.scrape_bracket(tournament.get("draws_url"))
+
+        master_bracket_id = tournament.get("master_bracket_id")
+        if master_bracket_id is None:
+            # Create the master bracket
+            return self.create_bracket(tournament_id, bracket)
+        else:
+            # Update the master bracket
+            master_bracket = da.get_bracket(master_bracket_id)
+            master_bracket["rounds"] = bracket["rounds"]
+            return self.update_bracket(master_bracket_id, master_bracket)
+
     def get_brackets(self, tournament_id):
         return sorted([self.fill_bracket(bracket) for bracket in da.get_brackets(tournament_id)], key = lambda bracket: bracket["score"], reverse = True)
 
@@ -61,9 +82,9 @@ class Manager:
             raise ServiceException("This tournament does not exist.", 400)
 
         # Check master bracket exists
-        if tournament["master_bracket_id"] is None:
+        if tournament.get("master_bracket_id") is None:
             # If the user is not an admin do not allow them to create the master
-            if self.user["admin"] == 0:
+            if self.user.get("admin", 0) == 0:
                 raise ServiceException("You do not have permission to create this bracket", 403)
 
             # Can't create a master bracket with no rounds
@@ -71,22 +92,22 @@ class Manager:
                 raise ServiceException("Cannot create a bracket with no rounds", 400)
 
             # Finds and creates new players
-            self.create_new_players(bracket["rounds"])
+            self.create_new_players(bracket.get("rounds"))
 
             # creates the bracket and matches
-            bracket_to_create = {"tournament_id": tournament_id, "name": tournament["name"] + " - Results", "rounds": bracket["rounds"]}
+            bracket_to_create = {"tournament_id": tournament_id, "name": tournament.get("name") + " - Results", "rounds": bracket.get("rounds")}
             new_bracket_id = self.create_bracket_and_matches(bracket_to_create)
             tournament["master_bracket_id"] = new_bracket_id
-            da.update_tournament(tournament["tournament_id"], tournament)
+            da.update_tournament(tournament.get("tournament_id"), tournament)
             return self.get_bracket(new_bracket_id)
 
         # See if the user already has a bracket
-        if da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"]) is not None:
+        if da.get_bracket(tournament_id = tournament_id, user_id = self.user.get("user_id")) is not None:
             raise ServiceException("You have already created a bracket", 412)
 
         # create the users bracket
-        master = self.get_bracket(tournament["master_bracket_id"])
-        bracket_to_create = {"tournament_id": tournament_id, "name": bracket["name"], "user_id": self.user["user_id"], "rounds": master["rounds"]}
+        master = self.get_bracket(tournament.get("master_bracket_id"))
+        bracket_to_create = {"tournament_id": tournament_id, "name": bracket.get("name"), "user_id": self.user.get("user_id"), "rounds": master.get("rounds")}
         new_bracket_id = self.create_bracket_and_matches(bracket_to_create)
         return self.get_bracket(new_bracket_id)
 
