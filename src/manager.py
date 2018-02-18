@@ -34,6 +34,7 @@ class Manager:
         if self.user["admin"] == 0:
             raise ServiceException("You do not have permission to create a tournament", 403)
 
+        tournament["active"] = 1
         tournament = da.create_tournament(tournament)
 
         # If they set a draws_url, try to create the master bracket
