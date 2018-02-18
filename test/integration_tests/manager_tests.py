@@ -118,8 +118,6 @@ class ManagerTest(TestCase):
             self.assertEqual(1, new_bracket["rounds"][0][0].get("winner_id"))
             new_bracket = self.manager.get_bracket(test_bracket.get("bracket_id"))
             self.assertNotEqual(1, new_bracket["rounds"][0][0].get("winner_id"))
-
-
         finally:
             da.delete_tournament(tournament_id)
             if new_player_id is not None:
@@ -135,8 +133,6 @@ class ManagerTest(TestCase):
             self.assertEqual(400, e.status_code)
 
             # Test a tournament without draws
-            tournament = {"name": "Test"}
-            tournament = da.create_tournament(tournament)
             e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
             self.assertEqual(412, e.status_code)
 
