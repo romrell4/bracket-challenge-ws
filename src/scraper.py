@@ -20,6 +20,8 @@ def scrape_bracket(draws_url):
 
     soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", id = "scoresDrawTable")
+    if table is None:
+        return None
 
     seeds = {}
     rounds = [[] for _ in table.thead.tr.find_all("th")]

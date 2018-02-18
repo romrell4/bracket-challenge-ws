@@ -4,6 +4,10 @@ import scraper
 
 class ScraperTests(TestCase):
     def test_scrape_bracket(self):
+        # Test an invalid draw
+        bracket = scraper.scrape_bracket("../test_invalid_draws.html")
+        self.assertIsNone(bracket)
+
         # Test an empty draw
         bracket = scraper.scrape_bracket("../test_empty_draws.html")
         self.assertEqual([], bracket.get("rounds"))

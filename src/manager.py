@@ -33,7 +33,15 @@ class Manager:
         # Check if user is an admin
         if self.user["admin"] == 0:
             raise ServiceException("You do not have permission to create a tournament", 403)
-        return da.create_tournament(tournament)
+
+        tournament = da.create_tournament(tournament)
+
+        # If they set a draws_url, try to create the master bracket
+        if tournament["draws_url"] is not None:
+            self.scrape_master_bracket_draws(tournament["tournament_id"])
+            return da.get_tournament(tournament["tournament_id"])
+        else:
+            return tournament
 
     def get_tournament(self, tournament_id):
         if tournament_id is None:
@@ -58,6 +66,9 @@ class Manager:
             raise ServiceException("The draws are not yet attached to this tournament. Unable to update", 412)
 
         bracket = scraper.scrape_bracket(tournament.get("draws_url"))
+
+        if bracket is None:
+            raise ServiceException("Unable to scrape bracket from {}".format(tournament.get("draws_url")), 400)
 
         master_bracket_id = tournament.get("master_bracket_id")
         if master_bracket_id is None:
