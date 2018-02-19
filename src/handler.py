@@ -14,7 +14,9 @@ def lambda_handler(event, context):
             raise ServiceException("Invalid request", 400)
 
         if "scraper" in event:
+            print("Running scraper")
             Manager(da, properties.admin_username).scrape_active_tournaments()
+            return
 
         if "resource" not in event or "httpMethod" not in event:
             raise ServiceException("Invalid request. No 'resource', or 'httpMethod' found in event", 400)
