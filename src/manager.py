@@ -50,6 +50,7 @@ class Manager:
 
         tournaments = self.da.get_active_tournaments()
         for tournament in tournaments:
+            print("Updating draws for {}".format(tournament.get("name")))
             self.scrape_master_bracket_draws(tournament.get("tournament_id"))
 
     def get_tournament(self, tournament_id):

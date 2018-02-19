@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         query_parameters = event.get("queryStringParameters", {}) if event.get("queryStringParameters") is not None else {}
         try:
             body = json.loads(event["body"])  # This will be used for most POSTs and PUTs
-        except (KeyError, ValueError):
+        except (TypeError, KeyError, ValueError):
             body = None
 
         fb_user = auth.validate_user(event)
