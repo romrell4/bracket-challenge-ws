@@ -44,6 +44,14 @@ class Manager:
         else:
             return tournament
 
+    def scrape_active_tournaments(self):
+        if self.user.get("admin") != 1:
+            raise ServiceException("You do not have permission to update master brackets", 403)
+
+        tournaments = self.da.get_active_tournaments()
+        for tournament in tournaments:
+            self.scrape_master_bracket_draws(tournament.get("tournament_id"))
+
     def get_tournament(self, tournament_id):
         if tournament_id is None:
             raise ServiceException("Invalid parameters passed in", 400)

@@ -1,4 +1,5 @@
 from unittest2 import TestCase
+from datetime import datetime, timedelta
 
 from manager import Manager
 from res import properties
@@ -48,6 +49,29 @@ class ManagerTest(TestCase):
             self.assertIsNotNone(new_tournament.get("master_bracket_id"))
         finally:
             self.da.delete_tournament(new_tournament.get("tournament_id"))
+
+    def test_scrape_active_tournaments(self):
+        tournament = self.da.create_tournament({
+            "name": "Test",
+            "draws_url": "../test_full_draws.html",
+            "start_date": datetime.today().date() + timedelta(days = 1),
+            "end_date": datetime.today().date() + timedelta(days = 2)
+        })
+        try:
+            # Test that the tournament has no master bracket yet
+            self.assertIsNone(tournament.get("master_bracket_id"))
+
+            # Test as a non-admin
+            e = assert_error(lambda: self.manager.scrape_active_tournaments())
+            self.assertEqual(403, e.status_code)
+
+            # Test as an admin
+            self.become_admin()
+            self.manager.scrape_active_tournaments()
+            new_tournament = self.da.get_tournament(tournament["tournament_id"])
+            self.assertIsNotNone(new_tournament.get("master_bracket_id"))
+        finally:
+            self.da.delete_tournament(tournament["tournament_id"])
 
     def test_update_bracket(self):
         tournament_id = self.da.create_tournament({"name": "Test"})["tournament_id"]

@@ -72,6 +72,9 @@ class Dao:
     def get_tournaments(self):
         return get_list(Tournament, "SELECT * FROM tournaments order by tournament_id desc")
 
+    def get_active_tournaments(self):
+        return get_list(Tournament, "select * from tournaments where CURDATE() < start_date and draws_url is not null order by tournament_id desc")
+
     def get_tournament(self, tournament_id):
         return get_one(Tournament, "SELECT * FROM tournaments WHERE tournament_id = %s", tournament_id)
 
