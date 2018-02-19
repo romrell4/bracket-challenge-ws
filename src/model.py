@@ -10,8 +10,10 @@ class Player:
 
 class Tournament:
     def __init__(self, result_set):
-        [self.tournament_id, self.name, self.master_bracket_id, self.draws_url, self.image_url, self.start_date, self.end_date] = result_set
-        self.active = self.start_date < date.today()
+        [self.tournament_id, self.name, self.master_bracket_id, self.draws_url, self.image_url, start_date, end_date] = result_set
+        self.active = start_date < date.today()
+        self.start_date = str(start_date)
+        self.end_date = str(end_date)
 
 class Bracket:
     def __init__(self, result_set):
