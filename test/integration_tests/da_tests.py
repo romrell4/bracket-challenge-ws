@@ -1,5 +1,5 @@
 from unittest2 import TestCase
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import da
 
@@ -27,6 +27,17 @@ class DaTest(TestCase):
         dict1 = {"name": "test"}
         dict2 = {"name": "test", "master_bracket_id": 0, "draws_url": "test_draws.com", "image_url": "test_image.com", "start_date": date.today(), "end_date": date.today()}
         self.run_simple_tests(da.get_tournaments, da.create_tournament, da.update_tournament, da.delete_tournament, "tournament_id", dict1, dict2)
+
+        # Test the dates and temporary active flag
+        dict1["start_date"] = date.today() + timedelta(days = 1)
+        dict1["end_date"] = date.today() + timedelta(days = 2)
+        tournament = da.create_tournament(dict1)
+        try:
+            start_date = datetime.strptime(tournament.get("start_date"), "%Y-%m-%d").date()
+            self.assertGreater(start_date, date.today())
+            self.assertTrue(tournament.get("active"))
+        finally:
+            da.delete_tournament(tournament.get("tournament_id"))
 
     def test_brackets(self):
         tournament = da.create_tournament({"name": "test"})
