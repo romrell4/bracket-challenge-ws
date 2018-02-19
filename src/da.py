@@ -1,11 +1,9 @@
 import sys
+
 import pymysql
-from datetime import date
-
 from model import *
-from service_exception import ServiceException
-
 from res import properties
+from service_exception import ServiceException
 
 rds_host = properties.db_host
 name = properties.db_username
