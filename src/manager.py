@@ -72,6 +72,8 @@ class Manager:
         tournament = self.da.get_tournament(tournament_id)
         if tournament is None:
             raise ServiceException("Invalid parameters passed in", 400)
+        if self.user.get("admin") != 1:
+            raise ServiceException("You do not have permission to update draws", 403)
         elif tournament.get("draws_url") is None:
             raise ServiceException("The draws are not yet attached to this tournament. Unable to update", 412)
 

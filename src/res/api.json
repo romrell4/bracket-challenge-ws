@@ -146,35 +146,6 @@
 				}
 			}
 		},
-		"/tournaments/scrape": {
-			"post": {
-				"summary": "Update the draws for all active tournaments",
-				"produces": [
-					"application/json"
-				],
-				"responses": {
-					"200": {},
-					"403": {
-						"description": "User does not have permission to scrape the master bracket",
-						"schema": {
-							"$ref": "#/definitions/error"
-						}
-					}
-				},
-				"x-amazon-apigateway-integration": {
-					"responses": {
-						"default": {
-							"statusCode": "200"
-						}
-					},
-					"uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:593996188786:function:BracketChallenge/invocations",
-					"passthroughBehavior": "when_no_match",
-					"httpMethod": "POST",
-					"contentHandling": "CONVERT_TO_TEXT",
-					"type": "aws_proxy"
-				}
-			}
-		},
 		"/tournaments/{tournamentId}": {
 			"get": {
 				"summary": "Get the specified tournament.",
@@ -289,13 +260,13 @@
 						}
 					},
 					"403": {
-						"description": "User does not have permission to scrape the master bracket",
+						"description": "User does not have permission to update draws",
 						"schema": {
 							"$ref": "#/definitions/error"
 						}
 					},
 					"412": {
-						"description": "Attempt to scrape draws when no draws_url is set",
+						"description": "Attempt to updated draws when no draws_url is set",
 						"schema": {
 							"$ref": "#/definitions/error"
 						}

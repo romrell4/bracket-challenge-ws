@@ -45,8 +45,6 @@ def lambda_handler(event, context):
             response_body = manager.get_tournaments()
         elif resource == "/tournaments" and method == "POST":
             response_body = manager.create_tournament(body)
-        elif resource == "/tournaments/scrape" and method == "POST":
-            response_body = manager.scrape_active_tournaments()
         elif resource == "/tournaments/{tournamentId}" and method == "GET":
             response_body = manager.get_tournament(path_parameters.get("tournamentId"))
         elif resource == "/tournaments/{tournamentId}" and method == "PUT":
