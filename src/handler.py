@@ -4,12 +4,19 @@ from manager import Manager
 from service_exception import ServiceException
 from da import Dao
 import auth
+from res import properties
 
 da = Dao()
 
 def lambda_handler(event, context):
     try:
-        if event is None or "resource" not in event or "httpMethod" not in event:
+        if event is None:
+            raise ServiceException("Invalid request", 400)
+
+        if "scraper" in event:
+            Manager(da, properties.admin_username).scrape_active_tournaments()
+
+        if "resource" not in event or "httpMethod" not in event:
             raise ServiceException("Invalid request. No 'resource', or 'httpMethod' found in event", 400)
 
         resource, method = event["resource"], event["httpMethod"]  # These will be used to specify which endpoint was being hit
