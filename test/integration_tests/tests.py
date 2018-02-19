@@ -3,7 +3,7 @@ import json
 import math
 
 import handler
-import da
+from da import Dao
 
 from service_exception import ServiceException
 from res import properties
@@ -37,71 +37,19 @@ def assert_success(response):
 def get_body(response):
     return json.loads(response["body"])
 
-def create_bracket(rounds, only_first_round, commit_to_database = True, player_ids = None, tournament = None):
-    if player_ids is None:
-        # creates new players
-        players = []
-        for i in range(int(math.pow(2, rounds))):
-            player = {"name": "_player" + str(i + 1)}
-            if not commit_to_database:
-                player["player_id"] = i + 1
-            players.append(player)
-
-        if commit_to_database:
-            # this creates players and appends all their ids to player_ids
-            da.create_players(players)
-            player_ids = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
-        else:
-            # This puts only the players' ids into player_ids
-            player_ids = [player["player_id"] for player in players]
-    else:
-        # makes sure that they passed in enough players to create the tournament
-        assert len(player_ids) == int(math.pow(2, rounds))
-
-    if tournament is None:
-        tournament = {"name": "test"}
-        if commit_to_database:
-            tournament = da.create_tournament(tournament)
-
-    bracket = {"name": "test"}
-    if commit_to_database:
-        bracket["tournament_id"] = tournament["tournament_id"]
-        bracket = da.create_bracket(bracket)
-
-    bracket["rounds"] = []
-    for round in range(rounds):
-        round_array = []
-        positions = int(len(player_ids) / math.pow(2, round + 1))
-        for position in range(positions):
-            match = {
-                "round": round + 1,
-                "position": position + 1
-            }
-
-            player1_index = int(position * math.pow(2, round + 1))
-
-            if round == 0 or not only_first_round:
-                match["player1_id"] = player_ids[player1_index]
-                match["player2_id"] = player_ids[int(player1_index + math.pow(2, round))]
-
-            if not only_first_round:
-                match["winner_id"] = player_ids[player1_index]
-
-            round_array.append(match)
-        bracket["rounds"].append(round_array)
-    if commit_to_database:
-        da.create_matches(bracket["bracket_id"], bracket["rounds"])
-    return bracket, player_ids
-
 class MyTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.da = Dao()
+
     def setUp(self):
         try:
-            self.user = da.create_user({"username": properties.test_username, "name": "Test User"})
+            self.user = self.da.create_user({"username": properties.test_username, "name": "Test User"})
         except ServiceException:
-            self.user = da.get_user_by_username(properties.test_username)
+            self.user = self.da.get_user_by_username(properties.test_username)
 
     def test_login(self):
-        da.delete_user(self.user["user_id"])
+        self.da.delete_user(self.user["user_id"])
 
         # Register as a new user
         response = execute("/users", "POST")
@@ -139,12 +87,12 @@ class MyTest(unittest.TestCase):
 
         finally:
             EVENT["headers"]["Token"] = properties.test_token
-            da.delete_tournament(body["tournament_id"])
+            self.da.delete_tournament(body["tournament_id"])
 
     def test_update_tournament(self):
         # Create a test tournament and update something in it
-        tournament = da.create_tournament({"name": "Test"})
-        tournament["active"] = True
+        tournament = self.da.create_tournament({"name": "Test"})
+        tournament["name"] = "Test2"
 
         # Test a non-admin
         response = execute("/tournaments/{tournamentId}", "PUT", path_params = {"tournamentId": tournament["tournament_id"]}, body = json.dumps(tournament))
@@ -163,10 +111,10 @@ class MyTest(unittest.TestCase):
         # Test a valid tournament update and make sure it updated
         response = execute("/tournaments/{tournamentId}", "PUT", path_params = {"tournamentId": tournament["tournament_id"]}, body = json.dumps(tournament))
         assert_success(response)
-        assert get_body(response)["active"] == 1
+        assert get_body(response)["name"] == "Test2"
 
     def test_get_my_bracket(self):
-        tournament_id = da.create_tournament({"name": "test"})["tournament_id"]
+        tournament_id = self.da.create_tournament({"name": "test"})["tournament_id"]
         try:
             # Invalid tournamentId
             response = execute("/tournaments/{tournamentId}/brackets/mine", path_params = {"tournamentId": 0})
@@ -177,21 +125,21 @@ class MyTest(unittest.TestCase):
             assert response["statusCode"] == 404
 
             # Valid bracket
-            da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament_id, "name": "test"})
+            self.da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament_id, "name": "test"})
             response = execute("/tournaments/{tournamentId}/brackets/mine", path_params = {"tournamentId": tournament_id})
             assert_success(response)
         finally:
-            da.delete_tournament(tournament_id)
+            self.da.delete_tournament(tournament_id)
 
     def test_get_bracket(self):
 
         # change this number to change the size of a new tournament
         rounds = 2
-        bracket1, player_ids = create_bracket(rounds, True)
+        bracket1, player_ids = self.create_bracket(rounds, True)
         tournament1_id = bracket1["tournament_id"]
         bracket1_id = bracket1["bracket_id"]
 
-        bracket2, player_ids = create_bracket(rounds, False, True, player_ids)
+        bracket2, player_ids = self.create_bracket(rounds, False, True, player_ids)
         tournament2_id = bracket2["tournament_id"]
         bracket2_id = bracket2["bracket_id"]
 
@@ -219,10 +167,10 @@ class MyTest(unittest.TestCase):
                 assert len(body["rounds"][round]) == int(len(player_ids) / math.pow(2, round + 1))
 
         finally:
-            da.delete_tournament(tournament1_id)
-            da.delete_tournament(tournament2_id)
+            self.da.delete_tournament(tournament1_id)
+            self.da.delete_tournament(tournament2_id)
             for player_id in player_ids:
-                da.delete_player(player_id)
+                self.da.delete_player(player_id)
 
     def test_get_brackets(self):
         # Invalid tournamentId
@@ -231,15 +179,15 @@ class MyTest(unittest.TestCase):
         assert len(get_body(response)) == 0
 
         # empty tournament
-        tournament = da.create_tournament({"name": "test", "master_bracket_id": 0})
+        tournament = self.da.create_tournament({"name": "test", "master_bracket_id": 0})
         response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
         assert_success(response)
         assert len(get_body(response)) == 0
 
         # non empty tournament
-        other_user = da.create_user({"username": "test_user", "name": "test"})
-        bracket1 = da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
-        bracket2 = da.create_bracket({"user_id": other_user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
+        other_user = self.da.create_user({"username": "test_user", "name": "test"})
+        bracket1 = self.da.create_bracket({"user_id": self.user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
+        bracket2 = self.da.create_bracket({"user_id": other_user["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
 
         try:
             response = execute("/tournaments/{tournamentId}/brackets", path_params = {"tournamentId": tournament["tournament_id"]})
@@ -251,10 +199,10 @@ class MyTest(unittest.TestCase):
                 assert "score" in bracket
 
         finally:
-            da.delete_bracket(bracket1["bracket_id"])
-            da.delete_bracket(bracket2["bracket_id"])
-            da.delete_user(other_user["user_id"])
-            da.delete_tournament(tournament["tournament_id"])
+            self.da.delete_bracket(bracket1["bracket_id"])
+            self.da.delete_bracket(bracket2["bracket_id"])
+            self.da.delete_user(other_user["user_id"])
+            self.da.delete_tournament(tournament["tournament_id"])
 
     def test_create_bracket(self):
         bracket = {"name": "Master", "rounds": [
@@ -301,7 +249,7 @@ class MyTest(unittest.TestCase):
                 },
             ]
         ]}
-        tournament = da.create_tournament({"name": "Test"})
+        tournament = self.da.create_tournament({"name": "Test"})
         tournament_id = tournament["tournament_id"]
 
         try:
@@ -325,13 +273,13 @@ class MyTest(unittest.TestCase):
             # test with Admin privileges with all new players
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket_with_names))
             assert_success(response)
-            tournament = da.get_tournament(tournament_id)
+            tournament = self.da.get_tournament(tournament_id)
             master_id = tournament["master_bracket_id"]
             assert master_id is not None
-            master_bracket = da.get_bracket(master_id)
+            master_bracket = self.da.get_bracket(master_id)
             assert master_bracket is not None
             assert master_bracket["name"] != bracket["name"]
-            player_ids = [player["player_id"] for player in da.get_players() if player["name"].startswith("_player")]
+            player_ids = [player["player_id"] for player in self.da.get_players() if player["name"].startswith("_player")]
             assert len(player_ids) == 4
             body = get_body(response)
             for i in range(len(body["rounds"])):
@@ -341,15 +289,15 @@ class MyTest(unittest.TestCase):
                         assert match["player2_id"] in player_ids
 
             tournament["master_bracket_id"] = None
-            da.update_tournament(tournament_id, tournament)
+            self.da.update_tournament(tournament_id, tournament)
 
             # test with Admin privileges with all existing players
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert_success(response)
-            tournament = da.get_tournament(tournament_id)
+            tournament = self.da.get_tournament(tournament_id)
             master_id = tournament["master_bracket_id"]
             assert master_id is not None
-            master_bracket = da.get_bracket(master_id)
+            master_bracket = self.da.get_bracket(master_id)
             assert master_bracket is not None
             assert master_bracket["name"] != bracket["name"]
 
@@ -360,10 +308,10 @@ class MyTest(unittest.TestCase):
 
             response = execute("/tournaments/{tournamentId}/brackets", "POST", path_params = {"tournamentId": tournament_id}, body = json.dumps(bracket))
             assert_success(response)
-            user_bracket = da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
-            user_matches = da.get_matches(user_bracket["bracket_id"])
-            master_id = da.get_tournament(tournament_id)["master_bracket_id"]
-            master_matches = da.get_matches(master_id)
+            user_bracket = self.da.get_bracket(tournament_id = tournament_id, user_id = self.user["user_id"])
+            user_matches = self.da.get_matches(user_bracket["bracket_id"])
+            master_id = self.da.get_tournament(tournament_id)["master_bracket_id"]
+            master_matches = self.da.get_matches(master_id)
             assert len(user_matches) == len(master_matches)
             for (user_match, master_match) in zip(user_matches, master_matches):
                 assert user_match["player1_id"] == master_match["player1_id"] and user_match["player2_id"] == master_match["player2_id"] \
@@ -375,23 +323,23 @@ class MyTest(unittest.TestCase):
 
         finally:
             EVENT["headers"]["Token"] = properties.test_token
-            da.delete_tournament(tournament_id)
+            self.da.delete_tournament(tournament_id)
             for player_id in player_ids:
-                da.delete_player(player_id)
+                self.da.delete_player(player_id)
 
     def test_scores(self):
         # change this number to change the rounds
         rounds = 3
-        master_bracket, player_ids = create_bracket(rounds, True, True)
+        master_bracket, player_ids = self.create_bracket(rounds, True, True)
 
         # This updates the tournament so that it has a master bracket
-        tournament = da.get_tournament(master_bracket["tournament_id"])
+        tournament = self.da.get_tournament(master_bracket["tournament_id"])
         tournament["master_bracket_id"] = master_bracket["bracket_id"]
-        da.update_tournament(tournament["tournament_id"], tournament)
+        self.da.update_tournament(tournament["tournament_id"], tournament)
 
-        test_bracket, player_ids = create_bracket(rounds, True, True, player_ids, tournament)
-        full_master_bracket, player_ids = create_bracket(rounds, False, True, player_ids, tournament)
-        full_test_bracket, player_ids = create_bracket(rounds, False, True, player_ids, tournament)
+        test_bracket, player_ids = self.create_bracket(rounds, True, True, player_ids, tournament)
+        full_master_bracket, player_ids = self.create_bracket(rounds, False, True, player_ids, tournament)
+        full_test_bracket, player_ids = self.create_bracket(rounds, False, True, player_ids, tournament)
 
         # Getting the test_bracket back through the handler because then the "rounds" will include the match_ids which is necessary for one of the tests
         test_bracket = get_body(execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]}))
@@ -406,17 +354,17 @@ class MyTest(unittest.TestCase):
 
             # test one winner in each round
             tournament["master_bracket_id"] = full_master_bracket["bracket_id"]
-            da.update_tournament(tournament["tournament_id"], tournament)
+            self.da.update_tournament(tournament["tournament_id"], tournament)
             for test_round, master_round in zip(test_bracket["rounds"], full_master_bracket["rounds"]):
                 test_round[0]["winner_id"] = master_round[0]["winner_id"]
-                da.update_match(test_round[0]["match_id"], test_round[0])
+                self.da.update_match(test_round[0]["match_id"], test_round[0])
                 response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": test_bracket["bracket_id"]})
                 assert_success(response)
                 body = get_body(response)
                 assert "score" in body
                 assert body["score"] == master_round[0]["round"]
                 test_round[0]["winner_id"] = None
-                da.update_match(test_round[0]["match_id"], test_round[0])
+                self.da.update_match(test_round[0]["match_id"], test_round[0])
 
             # test a bracket with all winners
             response = execute("/tournaments/{tournamentId}/brackets/{bracketId}", path_params = {"tournamentId": tournament["tournament_id"], "bracketId": full_test_bracket["bracket_id"]})
@@ -431,9 +379,65 @@ class MyTest(unittest.TestCase):
             assert body["score"] == score
 
         finally:
-            da.delete_tournament(tournament["tournament_id"])
+            self.da.delete_tournament(tournament["tournament_id"])
             for player_id in player_ids:
-                da.delete_player(player_id)
+                self.da.delete_player(player_id)
 
     def tearDown(self):
-        da.delete_user(self.user["user_id"])
+        self.da.delete_user(self.user["user_id"])
+
+    def create_bracket(self, rounds, only_first_round, commit_to_database = True, player_ids = None, tournament = None):
+        if player_ids is None:
+            # creates new players
+            players = []
+            for i in range(int(math.pow(2, rounds))):
+                player = {"name": "_player" + str(i + 1)}
+                if not commit_to_database:
+                    player["player_id"] = i + 1
+                players.append(player)
+
+            if commit_to_database:
+                # this creates players and appends all their ids to player_ids
+                self.da.create_players(players)
+                player_ids = [player["player_id"] for player in self.da.get_players() if player["name"].startswith("_player")]
+            else:
+                # This puts only the players' ids into player_ids
+                player_ids = [player["player_id"] for player in players]
+        else:
+            # makes sure that they passed in enough players to create the tournament
+            assert len(player_ids) == int(math.pow(2, rounds))
+
+        if tournament is None:
+            tournament = {"name": "test"}
+            if commit_to_database:
+                tournament = self.da.create_tournament(tournament)
+
+        bracket = {"name": "test"}
+        if commit_to_database:
+            bracket["tournament_id"] = tournament["tournament_id"]
+            bracket = self.da.create_bracket(bracket)
+
+        bracket["rounds"] = []
+        for round in range(rounds):
+            round_array = []
+            positions = int(len(player_ids) / math.pow(2, round + 1))
+            for position in range(positions):
+                match = {
+                    "round": round + 1,
+                    "position": position + 1
+                }
+
+                player1_index = int(position * math.pow(2, round + 1))
+
+                if round == 0 or not only_first_round:
+                    match["player1_id"] = player_ids[player1_index]
+                    match["player2_id"] = player_ids[int(player1_index + math.pow(2, round))]
+
+                if not only_first_round:
+                    match["winner_id"] = player_ids[player1_index]
+
+                round_array.append(match)
+            bracket["rounds"].append(round_array)
+        if commit_to_database:
+            self.da.create_matches(bracket["bracket_id"], bracket["rounds"])
+        return bracket, player_ids

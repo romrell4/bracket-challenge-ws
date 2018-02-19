@@ -1,25 +1,28 @@
 import json
 
 from manager import Manager
-import auth
 from service_exception import ServiceException
+from da import Dao
+import auth
+
+da = Dao()
 
 def lambda_handler(event, context):
     try:
         if event is None or "resource" not in event or "httpMethod" not in event:
             raise ServiceException("Invalid request. No 'resource', or 'httpMethod' found in event", 400)
 
-        resource, method = event["resource"], event["httpMethod"] # These will be used to specify which endpoint was being hit
-        path_parameters = event.get("pathParameters", {}) if event.get("pathParameters") is not None else {} # This will be used to get IDs and other parameters from the URL
+        resource, method = event["resource"], event["httpMethod"]  # These will be used to specify which endpoint was being hit
+        path_parameters = event.get("pathParameters", {}) if event.get("pathParameters") is not None else {}  # This will be used to get IDs and other parameters from the URL
         query_parameters = event.get("queryStringParameters", {}) if event.get("queryStringParameters") is not None else {}
         try:
-            body = json.loads(event["body"]) # This will be used for most POSTs and PUTs
+            body = json.loads(event["body"])  # This will be used for most POSTs and PUTs
         except:
             body = None
 
         fb_user = auth.validate_user(event)
 
-        manager = Manager(fb_user["email"])
+        manager = Manager(da, fb_user["email"])
 
         # Find the endpoint they are hitting, and process the request
         if resource == "/users" and method == "POST":

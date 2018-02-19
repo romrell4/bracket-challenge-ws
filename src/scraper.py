@@ -3,13 +3,11 @@ import bs4
 from bs4 import BeautifulSoup
 import re
 
-import da
-
 PLAYER_DICT = {}
 
 # Public method. This is the only one that should be called outside of this file
-def scrape_bracket(draws_url):
-    for player in da.get_players():
+def scrape_bracket(draws_url, all_players = None):
+    for player in all_players if all_players is not None else []:
         PLAYER_DICT[player["name"]] = player["player_id"]
 
     # If the draw looks like a valid URL, make a request to get it. Otherwise, it's a test, and load it from a local file
@@ -20,6 +18,7 @@ def scrape_bracket(draws_url):
 
     soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", id = "scoresDrawTable")
+
     if table is None:
         return None
 
