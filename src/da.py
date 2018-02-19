@@ -1,5 +1,6 @@
 import sys
 import pymysql
+from datetime import date
 
 from model import *
 from service_exception import ServiceException
@@ -78,13 +79,17 @@ def get_tournament(tournament_id):
     return get_one(Tournament, "SELECT * FROM tournaments WHERE tournament_id = %s", tournament_id)
 
 def create_tournament(tournament):
-    if "active" not in tournament:
-        tournament["active"] = 0
-    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id, draws_url, image_url, active) VALUES (%s, %s, %s, %s, %s)", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("draws_url"), tournament.get("image_url"), tournament.get("active"))
+    if "start_date" not in tournament:
+        tournament["start_date"] = date.today()
+    if "end_date" not in tournament:
+        tournament["end_date"] = date.today()
+    tournament_id = insert("INSERT INTO tournaments (name, master_bracket_id, draws_url, image_url, start_date, end_date) VALUES (%s, %s, %s, %s, %s, %s)",
+                           tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("draws_url"), tournament.get("image_url"), tournament.get("start_date"), tournament.get("end_date"))
     return get_tournament(tournament_id)
 
 def update_tournament(tournament_id, tournament):
-    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s, draws_url = %s, image_url = %s, active = %s WHERE tournament_id = %s", tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("draws_url"), tournament.get("image_url"), tournament.get("active"), tournament_id)
+    execute("UPDATE tournaments SET name = %s, master_bracket_id = %s, draws_url = %s, image_url = %s, start_date = %s, end_date = %s WHERE tournament_id = %s",
+            tournament.get("name"), tournament.get("master_bracket_id"), tournament.get("draws_url"), tournament.get("image_url"), tournament.get("start_date"), tournament.get("end_date"), tournament_id)
     return get_tournament(tournament_id)
 
 def delete_tournament(tournament_id):

@@ -1,8 +1,9 @@
-import unittest
+from unittest2 import TestCase
+from datetime import date
 
 import da
 
-class DaTest(unittest.TestCase):
+class DaTest(TestCase):
     def test_users(self):
         dict1 = {"username": "test", "name": "test"}
         dict2 = {"username": "test", "name": "test2"}
@@ -14,17 +15,17 @@ class DaTest(unittest.TestCase):
         self.run_simple_tests(da.get_players, da.create_player, da.update_player, da.delete_player, "player_id", dict1, dict2)
 
         # test batch insert of players
-        assert len([player for player in da.get_players() if player["name"].startswith("test")]) == 0
+        self.assertEqual(0, len([player for player in da.get_players() if player["name"].startswith("test")]))
         da.create_players([dict1, dict2])
         players = da.get_players()
         results = [player for player in players if player["name"].startswith("test")]
-        assert len(results) == 2
+        self.assertEqual(2, len(results))
         for player in results:
             da.delete_player(player["player_id"])
 
     def test_tournaments(self):
         dict1 = {"name": "test"}
-        dict2 = {"name": "test", "master_bracket_id": 0, "draws_url": "test_draws.com", "image_url": "test_image.com", "active": 1}
+        dict2 = {"name": "test", "master_bracket_id": 0, "draws_url": "test_draws.com", "image_url": "test_image.com", "start_date": date.today(), "end_date": date.today()}
         self.run_simple_tests(da.get_tournaments, da.create_tournament, da.update_tournament, da.delete_tournament, "tournament_id", dict1, dict2)
 
     def test_brackets(self):
@@ -40,14 +41,14 @@ class DaTest(unittest.TestCase):
             da.create_bracket({"user_id": user1["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
             da.create_bracket({"user_id": user2["user_id"], "tournament_id": tournament["tournament_id"], "name": "test"})
             brackets = da.get_brackets(tournament["tournament_id"])
-            assert len(brackets) == 2
+            self.assertEqual(2, len(brackets))
 
             # Testing the get_brackets with tournament and user
             bracket = da.get_bracket(tournament_id = tournament["tournament_id"], user_id = user1["user_id"])
-            assert bracket is not None
+            self.assertIsNotNone(bracket)
 
             bracket = da.get_bracket(tournament_id = tournament["tournament_id"], user_id = 0)
-            assert bracket is None
+            self.assertIsNone(bracket)
 
         finally:
             da.delete_tournament(tournament["tournament_id"])
@@ -72,8 +73,8 @@ class DaTest(unittest.TestCase):
             match = da.create_match({"bracket_id": bracket["bracket_id"], "round": 1, "position": 1, "player1_id": player1["player_id"],
                              "seed1": 1, "winner_id": player1["player_id"]})
             matches = da.get_matches(bracket["bracket_id"])
-            assert matches is not None
-            assert len(matches) == 1
+            self.assertIsNotNone(matches)
+            self.assertEqual(1, len(matches))
             da.delete_match(match["match_id"])
 
             # test batch insert matches
@@ -100,8 +101,8 @@ class DaTest(unittest.TestCase):
             ]
             da.create_matches(bracket["bracket_id"], rounds)
             matches = da.get_matches(bracket["bracket_id"])
-            assert matches is not None
-            assert len(matches) == 3
+            self.assertIsNotNone(matches)
+            self.assertEqual(3, len(matches))
 
         finally:
             da.delete_tournament(tournament["tournament_id"])
@@ -120,27 +121,26 @@ class DaTest(unittest.TestCase):
         da.create_matches(test_bracket["bracket_id"], [[{"round": 1, "position": 1, "winner_id": 1}, {"round": 1, "position": 2, "winner_id": 2}], [{"round": 2, "position": 1, "winner_id": 1}]])
         try:
             score = da.get_score(test_bracket["bracket_id"])
-            assert score == 4
+            self.assertEqual(4, score)
         finally:
             da.delete_tournament(tournament_id)
 
-    @staticmethod
-    def run_simple_tests(get_all, create, update, delete, id_key, create_dict, update_dict):
+    def run_simple_tests(self, get_all, create, update, delete, id_key, create_dict, update_dict):
         # Test get all
         if get_all is not None:
             objs = get_all()
-            assert objs is not None
+            self.assertIsNotNone(objs)
 
         # Test create (which also tests get)
         obj = create(create_dict)
         obj_id = None
         try:
-            assert obj is not None
+            self.assertIsNotNone(obj)
             obj_id = obj[id_key]
 
             # Test update
             new_obj = update(obj_id, update_dict)
-            assert obj != new_obj
+            self.assertNotEqual(obj, new_obj)
         finally:
             if obj_id is not None:
                 # Test delete

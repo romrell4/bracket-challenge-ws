@@ -1,3 +1,5 @@
+from datetime import date
+
 class User:
     def __init__(self, result_set):
         [self.user_id, self.username, self.name, self.admin] = result_set
@@ -8,7 +10,8 @@ class Player:
 
 class Tournament:
     def __init__(self, result_set):
-        [self.tournament_id, self.name, self.master_bracket_id, self.draws_url, self.image_url, self.active] = result_set
+        [self.tournament_id, self.name, self.master_bracket_id, self.draws_url, self.image_url, self.start_date, self.end_date] = result_set
+        self.active = self.start_date < date.today()
 
 class Bracket:
     def __init__(self, result_set):

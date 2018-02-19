@@ -34,7 +34,6 @@ class ManagerTest(TestCase):
         new_tournament = self.manager.create_tournament(original_tournament)
         try:
             self.assertIsNotNone(new_tournament.get("tournament_id"))
-            self.assertEquals(1, new_tournament.get("active"))
         finally:
             da.delete_tournament(new_tournament.get("tournament_id"))
 
