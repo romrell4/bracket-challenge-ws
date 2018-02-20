@@ -73,6 +73,74 @@ class ManagerTest(TestCase):
         finally:
             self.da.delete_tournament(tournament["tournament_id"])
 
+    def test_get_brackets(self):
+        # Test with invalid tournament id
+        brackets = self.manager.get_brackets(0)
+        self.assertEqual(0, len(brackets))
+
+        tournament = self.da.create_tournament({"name": "test"})
+        tournament_id = tournament.get("tournament_id")
+        try:
+            # Test with empty tournament
+            brackets = self.manager.get_brackets(tournament_id)
+            self.assertEqual(0, len(brackets))
+
+            self.da.create_bracket({"tournament_id": tournament_id,"name": "Master Test"})
+
+            brackets = self.manager.get_brackets(tournament_id)
+            self.assertEqual(1, len(brackets))
+            self.assertTrue("rounds" in brackets[0])
+            self.assertTrue("score" in brackets[0])
+
+        finally:
+            self.da.delete_tournament(tournament_id)
+
+    def test_scrape_master_bracket_draws(self):
+        tournament = self.da.create_tournament({"name": "Test"})
+
+        try:
+            # Test an invalid tournament id
+            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(None))
+            self.assertEqual(400, e.status_code)
+
+            # Test as non-admin
+            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
+            self.assertEqual(403, e.status_code)
+
+            # Test a tournament without draws
+            self.become_admin()
+            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
+            self.assertEqual(412, e.status_code)
+
+            # Test an invalid bracket
+            tournament["draws_url"] = "../test_invalid_draws.html"
+            tournament = self.da.update_tournament(tournament.get("tournament_id"), tournament)
+            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
+            self.assertEqual(400, e.status_code)
+
+            # Test creating a master bracket
+            tournament["draws_url"] = "../test_simple_draws.html"
+            tournament = self.da.update_tournament(tournament.get("tournament_id"), tournament)
+            master_bracket = self.manager.scrape_master_bracket_draws(tournament.get("tournament_id"))
+            self.assertEqual(1, len(master_bracket["rounds"]))
+            self.assertIsNone(master_bracket["rounds"][0][0].get("seed2"))
+            self.assertIsNone(master_bracket["rounds"][0][0].get("player2_name"))
+
+            # Test updating a master bracket (which should update other bracket's first round as well
+            my_bracket = self.manager.create_bracket(tournament.get("tournament_id"), {"name": "Test2"})
+
+            tournament = self.da.get_tournament(tournament.get("tournament_id"))
+            tournament["draws_url"] = "../test_simple_draws2.html"
+            tournament = self.da.update_tournament(tournament.get("tournament_id"), tournament)
+            master_bracket = self.manager.scrape_master_bracket_draws(tournament.get("tournament_id"))
+            my_bracket = self.manager.get_bracket(my_bracket.get("bracket_id"))
+            for bracket in [master_bracket, my_bracket]:
+                self.assertEqual(1, len(bracket["rounds"]))
+                self.assertEqual(2, bracket["rounds"][0][0].get("seed2"))
+                self.assertEqual("Rafael Nadal", bracket["rounds"][0][0].get("player2_name"))
+        finally:
+            self.da.delete_tournament(tournament.get("tournament_id"))
+
     def test_update_bracket(self):
         tournament_id = self.da.create_tournament({"name": "Test"})["tournament_id"]
         new_player_id = None
@@ -151,51 +219,6 @@ class ManagerTest(TestCase):
             if new_player_id is not None:
                 self.da.delete_player(new_player_id)
 
-    def test_scrape_master_bracket_draws(self):
-        tournament = self.da.create_tournament({"name": "Test"})
-
-        try:
-            # Test an invalid tournament id
-            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(None))
-            self.assertEqual(400, e.status_code)
-
-            # Test as non-admin
-            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
-            self.assertEqual(403, e.status_code)
-
-            # Test a tournament without draws
-            self.become_admin()
-            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
-            self.assertEqual(412, e.status_code)
-
-            # Test an invalid bracket
-            tournament["draws_url"] = "../test_invalid_draws.html"
-            tournament = self.da.update_tournament(tournament.get("tournament_id"), tournament)
-            e = assert_error(lambda: self.manager.scrape_master_bracket_draws(tournament.get("tournament_id")))
-            self.assertEqual(400, e.status_code)
-
-            # Test creating a master bracket
-            tournament["draws_url"] = "../test_simple_draws.html"
-            tournament = self.da.update_tournament(tournament.get("tournament_id"), tournament)
-            master_bracket = self.manager.scrape_master_bracket_draws(tournament.get("tournament_id"))
-            self.assertEqual(1, len(master_bracket["rounds"]))
-            self.assertIsNone(master_bracket["rounds"][0][0].get("seed2"))
-            self.assertIsNone(master_bracket["rounds"][0][0].get("player2_name"))
-
-            # Test updating a master bracket (which should update other bracket's first round as well
-            my_bracket = self.manager.create_bracket(tournament.get("tournament_id"), {"name": "Test2"})
-
-            tournament = self.da.get_tournament(tournament.get("tournament_id"))
-            tournament["draws_url"] = "../test_simple_draws2.html"
-            tournament = self.da.update_tournament(tournament.get("tournament_id"), tournament)
-            master_bracket = self.manager.scrape_master_bracket_draws(tournament.get("tournament_id"))
-            my_bracket = self.manager.get_bracket(my_bracket.get("bracket_id"))
-            for bracket in [master_bracket, my_bracket]:
-                self.assertEqual(1, len(bracket["rounds"]))
-                self.assertEqual(2, bracket["rounds"][0][0].get("seed2"))
-                self.assertEqual("Rafael Nadal", bracket["rounds"][0][0].get("player2_name"))
-        finally:
-            self.da.delete_tournament(tournament.get("tournament_id"))
 
 def assert_error(statement):
     try:

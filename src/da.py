@@ -145,7 +145,7 @@ class Dao:
         return self.get_match(match_id)
 
     def create_matches(self, bracket_id, rounds):
-        if len(rounds) == 0: return
+        if len(rounds) == 0 or len(rounds[0]) == 0: return
         sql = "INSERT INTO matches (bracket_id, round, position, player1_id, player2_id, seed1, seed2, winner_id) VALUES "
         values = []
         args = []

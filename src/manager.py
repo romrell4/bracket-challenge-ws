@@ -107,12 +107,12 @@ class Manager:
         # Check master bracket exists
         if tournament.get("master_bracket_id") is None:
             # If the user is not an admin do not allow them to create the master
-            if self.user.get("admin", 0) == 0:
+            if self.user.get("admin") != 1:
                 raise ServiceException("You do not have permission to create this bracket", 403)
 
             # Can't create a master bracket with no rounds
             if "rounds" not in bracket:
-                raise ServiceException("Cannot create a bracket with no rounds", 400)
+                raise ServiceException("Cannot create a master bracket with no rounds", 400)
 
             # Finds and creates new players
             self.create_new_players(bracket.get("rounds"))
