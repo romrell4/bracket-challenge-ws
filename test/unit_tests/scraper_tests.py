@@ -20,7 +20,7 @@ class ScraperTests(TestCase):
         bracket = scraper.scrape_bracket("../test_new_draws.html", players)
         self.assertEqual(5, len(bracket.get("rounds")))
         self.assertEqual(1, bracket.get("rounds")[0][0].get("player1_id")) # Player ID look up test
-        self.assertEqual("1", bracket.get("rounds")[0][0].get("seed1")) # Seed test
+        self.assertEqual(1, bracket.get("rounds")[0][0].get("seed1")) # Seed test
         self.assertIsNone(bracket.get("rounds")[0][0].get("player2_id")) # Qualifier test
         self.assertEqual({"round": 2, "position": 1}, bracket.get("rounds")[1][0]) # Empty test
 

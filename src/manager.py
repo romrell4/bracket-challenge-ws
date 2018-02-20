@@ -72,24 +72,24 @@ class Manager:
         tournament = self.da.get_tournament(tournament_id)
         if tournament is None:
             raise ServiceException("Invalid parameters passed in", 400)
-        if self.user.get("admin") != 1:
+        elif self.user.get("admin") != 1:
             raise ServiceException("You do not have permission to update draws", 403)
         elif tournament.get("draws_url") is None:
             raise ServiceException("The draws are not yet attached to this tournament. Unable to update", 412)
 
-        bracket = scraper.scrape_bracket(tournament.get("draws_url"), self.da.get_players())
+        scraped_bracket = scraper.scrape_bracket(tournament.get("draws_url"), self.da.get_players())
 
-        if bracket is None:
+        if scraped_bracket is None:
             raise ServiceException("Unable to scrape bracket from {}".format(tournament.get("draws_url")), 400)
 
         master_bracket_id = tournament.get("master_bracket_id")
         if master_bracket_id is None:
             # Create the master bracket
-            return self.create_bracket(tournament_id, bracket)
+            return self.create_bracket(tournament_id, scraped_bracket)
         else:
-            # Update the master bracket
-            master_bracket = self.da.get_bracket(master_bracket_id)
-            master_bracket["rounds"] = bracket["rounds"]
+            # Update the master bracket (which will also update other brackets' first round)
+            master_bracket = self.get_bracket(master_bracket_id)
+            master_bracket["rounds"] = scraped_bracket["rounds"]
             return self.update_bracket(master_bracket_id, master_bracket)
 
     def get_brackets(self, tournament_id):
@@ -165,7 +165,7 @@ class Manager:
             for original_match, match in zip(original_round, round):
                 # Only update the matches that have changed
                 if original_match.get("player1_id") != match.get("player1_id") or original_match.get("player2_id") != match.get("player2_id") or \
-                        original_bracket.get("seed1") != match.get("seed1") or original_bracket.get("seed2") != match.get("seed2") or original_match.get("winner_id") != match.get("winner_id"):
+                        original_match.get("seed1") != match.get("seed1") or original_match.get("seed2") != match.get("seed2") or original_match.get("winner_id") != match.get("winner_id"):
                     original_match["player1_id"] = match.get("player1_id")
                     original_match["player2_id"] = match.get("player2_id")
                     original_match["seed1"] = match.get("seed1")
@@ -185,8 +185,8 @@ class Manager:
 
                 for master_match, match in zip(original_bracket.get("rounds")[0], bracket.get("rounds")[0]):
                     # Only update matches that have changed
-                    if original_match.get("player1_id") != match.get("player1_id") or original_match.get("player2_id") != match.get("player2_id") or \
-                            original_match.get("seed1") != match.get("seed1") or original_match.get("seed2") != match.get("seed2"):
+                    if master_match.get("player1_id") != match.get("player1_id") or master_match.get("player2_id") != match.get("player2_id") or \
+                            master_match.get("seed1") != match.get("seed1") or master_match.get("seed2") != match.get("seed2"):
                         match["player1_id"] = master_match.get("player1_id")
                         match["player2_id"] = master_match.get("player2_id")
                         match["seed1"] = master_match.get("seed1")

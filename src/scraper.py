@@ -14,7 +14,8 @@ def scrape_bracket(draws_url, all_players = None):
     if draws_url.startswith("http"):
         html = requests.get(draws_url).text
     else:
-        with open(draws_url) as f: html = f.read()
+        with open(draws_url) as f:
+            html = f.read()
 
     soup = BeautifulSoup(html, "html.parser")
     table = soup.find("table", id = "scoresDrawTable")
@@ -50,11 +51,14 @@ def scrape_bracket(draws_url, all_players = None):
     return {"rounds": bracket}
 
 def _get_seed(tag):
-    return re.sub(r"\D", "", tag.find("span").string) if tag.find("span") else None
+    try:
+        return int(re.sub(r"\D", "", tag.find("span").string))
+    except:
+        return None
 
 def _get_name(tag):
     link = tag.find("a", "scores-draw-entry-box-players-item")
-    return link['data-ga-label'] if link is not None else None
+    return link["data-ga-label"] if link is not None else None
 
 class Match:
     def __init__(self, round, position, player1_name = None, player2_name = None, seed1 = None, seed2 = None, winner_name = None):
@@ -73,7 +77,7 @@ class Match:
                 setattr(self, "player{}_id".format(position), player_id)
             else:
                 setattr(self, "player{}_name".format(position), name)
-        if seed is not None and seed != "":
+        if seed is not None:
             setattr(self, "seed{}".format(position), seed)
 
     @staticmethod
