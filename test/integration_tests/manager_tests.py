@@ -185,7 +185,7 @@ class ManagerTest(TestCase):
             self.assertEqual("Another New Name", new_bracket.get("name"))
 
             # Test updating bracket's rounds
-            test_bracket["rounds"][0][0]["player1_id"] = 1
+            test_bracket["rounds"][0][0] = {"player1_id": 1, "player1_name": "Bad Test"}
             new_bracket = self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket)
             self.assertEqual(1, new_bracket["rounds"][0][0].get("player1_id"))
 

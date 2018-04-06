@@ -200,9 +200,9 @@ class Manager:
         new_players = []
         for round in rounds:
             for match in round:
-                if match.get("player1_name") is not None and match.get("player1_name") not in new_players:
+                if match.get("player1_id") is None and match.get("player1_name") is not None and match.get("player1_name") not in new_players:
                     new_players.append(match.get("player1_name"))
-                if match.get("player2_name") is not None and match.get("player2_name") not in new_players:
+                if match.get("player2_id") is None and match.get("player2_name") is not None and match.get("player2_name") not in new_players:
                     new_players.append(match.get("player2_name"))
         if len(new_players) != 0:
             self.da.create_players([{"name": player} for player in new_players])
@@ -214,9 +214,9 @@ class Manager:
             player_look_up[player["name"]] = player.get("player_id")
         for round in rounds:
             for match in round:
-                if match.get("player1_name") is not None:
+                if match.get("player1_id") is None and match.get("player1_name") is not None:
                     match["player1_id"] = player_look_up[match.get("player1_name")]
-                if match.get("player2_name") is not None:
+                if match.get("player2_id") is None and match.get("player2_name") is not None:
                     match["player2_id"] = player_look_up[match.get("player2_name")]
 
     def get_my_bracket(self, tournament_id):
