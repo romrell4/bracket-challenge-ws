@@ -1,7 +1,0 @@
-1. Get Mark up to speed
-2. Create database
---DONE STUFF ABOVE HERE--
-3. Define API
-4. Create WS
-5. Figure out authentication
-6. Look into front-end solutions (mobile apps, etc)
