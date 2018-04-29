@@ -65,7 +65,6 @@ class Manager:
             if "rounds" not in bracket:
                 raise ServiceException("Cannot create a bracket with no rounds", 400)
 
-            # If user is an admin allow them to create the master bracket
             # Finds and creates new players
             new_players = []
             for round in bracket["rounds"]:
@@ -107,10 +106,15 @@ class Manager:
         return self.get_bracket(new_bracket_id)
 
     def update_bracket(self, bracket_id, bracket):
-        if bracket is None or bracket["name"] is None or bracket["rounds"] is None:
+        # Validate the input
+        if bracket is None or "name" not in bracket or "rounds" not in bracket:
             raise ServiceException("Invalid bracket passed in", 400)
 
+        # If the bracket is owned by someone else and the user is not an admin, throw an error
         original_bracket = self.get_bracket(bracket_id)
+        if self.user["id"] != original_bracket["user_id"] and self.user["admin"] == 0:
+            raise ServiceException("You do not have permission to update this bracket", 403)
+
         original_bracket["name"] = bracket["name"]
 
         original_rounds, rounds = original_bracket["rounds"], bracket["rounds"]
