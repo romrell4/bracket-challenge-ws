@@ -139,12 +139,8 @@ class Manager:
         if bracket is None or "name" not in bracket or "rounds" not in bracket:
             raise ServiceException("Invalid bracket passed in", 400)
 
-        # If the bracket is owned by someone else and the user is not an admin, throw an error
+        # Get actual bracket from database as a starting point
         original_bracket = self.get_bracket(bracket_id)
-        if self.user["id"] != original_bracket["user_id"] and self.user["admin"] == 0:
-            raise ServiceException("You do not have permission to update this bracket", 403)
-
-        original_bracket["name"] = bracket["name"]
 
         # You can only update a bracket if you own it, or if you're an admin
         if original_bracket.get("user_id") != self.user.get("user_id") and self.user.get("admin") == 0:
