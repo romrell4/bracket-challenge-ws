@@ -23,20 +23,28 @@ def scrape_bracket(draws_url, all_players = None):
     if table is None:
         return None
 
+    def get_name(tag):
+        link = tag.find("a", "scores-draw-entry-box-players-item")
+        return link["data-ga-label"] if link is not None else None
+
+    def get_seed(tag):
+        try: return int(re.sub(r"\D", "", tag.find("span").string))
+        except: return None
+
     seeds = {}
     rounds = [[] for _ in table.thead.tr.find_all("th")]
     for row in list([row for row in table.tbody.children if isinstance(row, bs4.element.Tag)]):
         for round, round_td in enumerate([td for td in list(row.children) if isinstance(td, bs4.element.Tag)]):
             if round == 0:
                 match_trs = round_td.find_all("tr")
-                player1_name = _get_name(match_trs[0])
-                player2_name = _get_name(match_trs[1])
+                player1_name = get_name(match_trs[0])
+                player2_name = get_name(match_trs[1])
                 rounds[round] += [player1_name, player2_name]
 
-                seeds[player1_name] = _get_seed(match_trs[0])
-                seeds[player2_name] = _get_seed(match_trs[1])
+                seeds[player1_name] = get_seed(match_trs[0])
+                seeds[player2_name] = get_seed(match_trs[1])
             else:
-                player_name = _get_name(round_td)
+                player_name = get_name(round_td)
                 rounds[round].append(player_name)
 
     bracket = []
@@ -49,16 +57,6 @@ def scrape_bracket(draws_url, all_players = None):
             match = Match(round + 1, int(i / 2) + 1, player1, player2, seed1, seed2, winner_name)
             bracket[round].append(match.__dict__)
     return {"rounds": bracket}
-
-def _get_seed(tag):
-    try:
-        return int(re.sub(r"\D", "", tag.find("span").string))
-    except:
-        return None
-
-def _get_name(tag):
-    link = tag.find("a", "scores-draw-entry-box-players-item")
-    return link["data-ga-label"] if link is not None else None
 
 class Match:
     def __init__(self, round, position, player1_name = None, player2_name = None, seed1 = None, seed2 = None, winner_name = None):
