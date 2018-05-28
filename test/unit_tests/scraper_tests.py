@@ -32,3 +32,10 @@ class ScraperTests(TestCase):
 
         bracket = scraper.scrape_bracket("../test_full_draws.html")
         self.assertEqual(7, len(bracket.get("rounds")))
+
+    def test_french(self):
+        bracket = scraper.scrape_bracket("../test_french_open.html")
+        self.assertEqual(7, len(bracket.get("rounds")))
+        for match in bracket.get("rounds")[0]:
+            self.assertIsNotNone(match.get("player1_name"))
+            self.assertIsNotNone(match.get("player2_name"))
