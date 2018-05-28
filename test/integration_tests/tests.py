@@ -67,55 +67,6 @@ class MyTest(unittest.TestCase):
         response = execute("/tournaments")
         assert_success(response)
 
-    def test_create_tournament(self):
-        tournament = {"name": "Test"}
-        # testing a nonadmin user trying to create a tournament
-        response = execute("/tournaments", "POST", body = json.dumps(tournament))
-        assert response["statusCode"] == 403
-
-        # testing an admin trying to create a tournament without a body
-        EVENT["headers"]["Token"] = properties.admin_token
-        response = execute("/tournaments", "POST")
-        assert response["statusCode"] == 400
-
-        # testing an admin creating a valid tournament
-        response = execute("/tournaments", "POST", body = json.dumps(tournament))
-        body = get_body(response)
-        try:
-            assert_success(response)
-            assert len(body) > 0
-
-        finally:
-            EVENT["headers"]["Token"] = properties.test_token
-            self.da.delete_tournament(body["tournament_id"])
-
-    def test_update_tournament(self):
-        # Create a test tournament and update something in it
-        tournament = self.da.create_tournament({"name": "Test"})
-        try:
-            tournament["name"] = "Test2"
-
-            # Test a non-admin
-            response = execute("/tournaments/{tournamentId}", "PUT", path_params = {"tournamentId": tournament["tournament_id"]}, body = json.dumps(tournament))
-            assert response["statusCode"] == 403
-
-            EVENT["headers"]["Token"] = properties.admin_token
-
-            # Test without a valid tournament body
-            response = execute("/tournaments/{tournamentId}", "PUT", path_params = {"tournamentId": tournament["tournament_id"]})
-            assert response["statusCode"] == 400
-
-            # Test without a valid tournament id
-            response = execute("/tournaments/{tournamentId}", "PUT", body = json.dumps(tournament))
-            assert response["statusCode"] == 400
-
-            # Test a valid tournament update and make sure it updated
-            response = execute("/tournaments/{tournamentId}", "PUT", path_params = {"tournamentId": tournament["tournament_id"]}, body = json.dumps(tournament))
-            assert_success(response)
-            assert get_body(response)["name"] == "Test2"
-        finally:
-            self.da.delete_tournament(tournament.get("tournament_id"))
-
     def test_get_my_bracket(self):
         tournament_id = self.da.create_tournament({"name": "test"})["tournament_id"]
         try:

@@ -135,12 +135,16 @@ class Manager:
         return self.get_bracket(new_bracket_id)
 
     def update_bracket(self, bracket_id, bracket):
-        # Validate input
-        if bracket is None or bracket.get("name") is None or bracket.get("rounds") is None:
+        # Validate the input
+        if bracket is None or "name" not in bracket or "rounds" not in bracket:
             raise ServiceException("Invalid bracket passed in", 400)
 
-        # Get actual bracket from database as a starting point
+        # If the bracket is owned by someone else and the user is not an admin, throw an error
         original_bracket = self.get_bracket(bracket_id)
+        if self.user["id"] != original_bracket["user_id"] and self.user["admin"] == 0:
+            raise ServiceException("You do not have permission to update this bracket", 403)
+
+        original_bracket["name"] = bracket["name"]
 
         # You can only update a bracket if you own it, or if you're an admin
         if original_bracket.get("user_id") != self.user.get("user_id") and self.user.get("admin") == 0:
