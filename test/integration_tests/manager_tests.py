@@ -143,7 +143,8 @@ class ManagerTest(TestCase):
             self.da.delete_tournament(tournament.get("tournament_id"))
 
     def test_update_bracket(self):
-        tournament_id = self.da.create_tournament({"name": "Test"}).get("tournament_id")
+        tournament = self.da.create_tournament({"name": "Test"})
+        tournament_id = tournament.get("tournament_id")
         new_player_id = None
         try:
             # Test null bracket
@@ -174,7 +175,17 @@ class ManagerTest(TestCase):
             e = assert_error(lambda: self.manager.update_bracket(master_bracket.get("bracket_id"), master_bracket))
             self.assertEqual(403, e.status_code)
 
-            # Test updating your bracket as non-admin
+            # Test updating your bracket as non-admin, after the tournament has started
+            test_bracket["name"] = "New Name"
+            e = assert_error(lambda: self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket))
+            self.assertEqual(403, e.status_code)
+
+            # Make the bracket start tomorrow
+            tournament["start_date"] = (datetime.strptime(tournament.get("start_date"), "%Y-%m-%d") + timedelta(days = 1)).strftime("%Y-%m-%d")
+            tournament = self.da.update_tournament(tournament_id, tournament)
+            self.assertLess(datetime.now(), datetime.strptime(tournament.get("start_date"), "%Y-%m-%d"))
+
+            # Test updating your bracket as a non-admin
             test_bracket["name"] = "New Name"
             new_bracket = self.manager.update_bracket(test_bracket.get("bracket_id"), test_bracket)
             self.assertEqual("New Name", new_bracket.get("name"))

@@ -142,9 +142,15 @@ class Manager:
         # Get actual bracket from database as a starting point
         original_bracket = self.get_bracket(bracket_id)
 
-        # You can only update a bracket if you own it, or if you're an admin
-        if original_bracket.get("user_id") != self.user.get("user_id") and self.user.get("admin") == 0:
-            raise ServiceException("You do not have permission to update this bracket", 403)
+        if self.user.get("admin") == 0:
+            # If you don't own the bracket, no go
+            if original_bracket.get("user_id") != self.user.get("user_id"):
+                raise ServiceException("You do not have permission to update this bracket", 403)
+
+            # If the tournament isn't active, no go
+            tournament = self.da.get_tournament(original_bracket.get("tournament_id"))
+            if not tournament.get("active"):
+                raise ServiceException("This tournament is already closed. No more updates are permitted.", 403)
 
         # Validate that the new bracket's rounds match the size of the original
         original_rounds, rounds = original_bracket.get("rounds"), bracket.get("rounds")
