@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import datetime
+from pytz import timezone
 
 class User:
     def __init__(self, result_set):
@@ -11,7 +12,7 @@ class Player:
 class Tournament:
     def __init__(self, result_set):
         [self.tournament_id, self.name, self.master_bracket_id, self.draws_url, self.image_url, start_date, end_date] = result_set
-        self.active = start_date > date.today()
+        self.active = start_date > datetime.now(timezone("US/Pacific")).date()
         self.start_date = str(start_date)
         self.end_date = str(end_date)
 
