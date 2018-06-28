@@ -4,6 +4,7 @@ import pymysql
 from model import *
 from res import properties
 from service_exception import ServiceException
+from datetime import date
 
 rds_host = properties.db_host
 name = properties.db_username
@@ -73,7 +74,8 @@ class Dao:
         return get_list(Tournament, "SELECT * FROM tournaments order by tournament_id desc")
 
     def get_active_tournaments(self):
-        return get_list(Tournament, "select * from tournaments where CURDATE() < end_date and draws_url is not null order by tournament_id desc")
+        # A tournamnent is "active" if it exists, and hasn't ended yet. The offset of one is because the tournament ends during that date, not at 00:00:00
+        return get_list(Tournament, "select * from tournaments where CURDATE() < end_date + 1 and draws_url is not null order by tournament_id desc")
 
     def get_tournament(self, tournament_id):
         return get_one(Tournament, "SELECT * FROM tournaments WHERE tournament_id = %s", tournament_id)
