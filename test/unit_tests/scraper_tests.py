@@ -42,5 +42,8 @@ class ScraperTests(TestCase):
 
     def test_finished_bracket(self):
         bracket = scraper.scrape_bracket("../test_finished_bracket.html", Dao().get_players())
-        self.assertEqual(5, len(bracket.get("rounds")))
         self.assertIsNotNone(bracket.get("rounds")[4][0].get("winner_id"))
+
+    def test_walkover(self):
+        bracket = scraper.scrape_bracket("../test_walkover.html", Dao().get_players())
+        self.assertIsNotNone(bracket.get("rounds")[1][2].get("winner_id"))
