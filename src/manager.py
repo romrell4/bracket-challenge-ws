@@ -67,6 +67,14 @@ class Manager:
             raise ServiceException("You do not have permission to edit a tournament", 403)
         return self.da.update_tournament(tournament_id, tournament)
 
+    def delete_tournament(self, tournament_id):
+        if tournament_id is None or self.da.get_tournament(tournament_id) is None:
+            raise ServiceException("Invalid tournament id passed in", 400)
+        # Make sure the user is an admin
+        if self.user["admin"] == 0:
+            raise ServiceException("You do not have permission to delete a tournament", 403)
+        self.da.delete_tournament(tournament_id)
+
     def scrape_master_bracket_draws(self, tournament_id):
         # Check for valid parameters
         tournament = self.da.get_tournament(tournament_id)

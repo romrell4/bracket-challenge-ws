@@ -74,6 +74,28 @@ class ManagerTest(TestCase):
         finally:
             self.da.delete_tournament(tournament.get("tournament_id"))
 
+    def test_delete_tournament(self):
+        # Test with a null tournament id
+        e = assert_error(lambda: self.manager.delete_tournament(None))
+        self.assertEqual(400, e.status_code)
+
+        # Test a tournament that doesn't exist
+        e = assert_error(lambda: self.manager.delete_tournament(0))
+        self.assertEqual(400, e.status_code)
+
+        tournament_id = self.da.create_tournament({"name": "test"}).get("tournament_id")
+        try:
+            # Test without being an admin
+            e = assert_error(lambda: self.manager.delete_tournament(tournament_id))
+            self.assertEqual(403, e.status_code)
+
+            # Test a valid delete
+            self.become_admin()
+            self.manager.delete_tournament(tournament_id)
+            self.assertIsNone(self.da.get_tournament(tournament_id))
+        finally:
+            self.da.delete_tournament(tournament_id)
+
     def test_get_brackets(self):
         # Test with invalid tournament id
         brackets = self.manager.get_brackets(0)
