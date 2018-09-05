@@ -50,7 +50,7 @@ def lambda_handler(event, context):
         elif resource == "/tournaments/{tournamentId}" and method == "PUT":
             response_body = manager.update_tournament(path_parameters.get("tournamentId"), body)
         elif resource == "/tournaments/{tournamentId}" and method == "DELETE":
-            manager.delete_tournament(path_parameters.get("tournamentId"))
+            response_body = manager.delete_tournament(path_parameters.get("tournamentId"))
         elif resource == "/tournaments/{tournamentId}/scrape" and method == "POST":
             response_body = manager.scrape_master_bracket_draws(path_parameters.get("tournamentId"))
         elif resource == "/tournaments/{tournamentId}/brackets" and method == "GET":
