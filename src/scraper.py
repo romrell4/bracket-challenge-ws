@@ -1,24 +1,64 @@
-import requests
-import bs4
-from bs4 import BeautifulSoup
 import re
+from datetime import datetime
+from urllib.parse import urljoin
+
+import bs4
+import requests
+from bs4 import BeautifulSoup
 
 PLAYER_DICT = {}
 
-# Public method. This is the only one that should be called outside of this file
+def scrape_tournaments(tournaments_url, existing_tournaments, today = datetime.now()):
+    html = get_html(tournaments_url)
+    rows = html.find_all("tr", "tourney-result")
+
+    new_tournaments = []
+
+    for row in rows:
+        try: new_tournaments.append(get_tournament(tournaments_url, row, existing_tournaments, today))
+        except Exception as e: print(e)
+
+    return new_tournaments
+
+def get_tournament(base_url, row, existing_tournaments, today = datetime.now()):
+    name = row.find("span", "tourney-location").text.strip().split(",")[0]
+    start_date, end_date = [datetime.strptime(value, "%Y.%m.%d") for value in row.find("span", "tourney-dates").text.strip().split(" - ")]
+    day_diff = (start_date - today).days
+    if day_diff > 3:
+        raise InvalidTournamentException(name, "Tournament is too far in the future.")
+    elif day_diff < 0:
+        raise InvalidTournamentException(name, "Tournament has already started.")
+
+    singles_players = int(row.find("td", "tourney-details").find("span", "item-value").text.strip())
+    if singles_players < 16:
+        raise InvalidTournamentException(name, "Too few singles players. Most likely not a valid tournament.")
+
+    if next((t for t in existing_tournaments if t["name"] == name and t["start_date"] == start_date), None) is not None:
+        raise InvalidTournamentException(name, "Tournament already exists.")
+
+    overview_url = urljoin(base_url, row.find("a", "tourney-title").attrs.get("href"))
+    html = get_html(overview_url)
+
+    draws_url = urljoin(overview_url, html.find("li", id = "draw_SectionLink").find("a").attrs["href"])
+
+    image_style = html.find("div", id = "tournamentHero").attrs["style"]
+    image_url = urljoin(overview_url, re.match("background-image:url\('(.*)'\)", image_style).group(1))
+
+    return {
+        "name": name,
+        "start_date": start_date,
+        "end_date": end_date,
+        "draws_url": draws_url,
+        "image_url": image_url
+    }
+
 def scrape_bracket(draws_url, all_players = None):
     for player in all_players if all_players is not None else []:
         PLAYER_DICT[player["name"]] = player["player_id"]
 
     # If the draw looks like a valid URL, make a request to get it. Otherwise, it's a test, and load it from a local file
-    if draws_url.startswith("http"):
-        html = requests.get(draws_url).text
-    else:
-        with open(draws_url) as f:
-            html = f.read()
-
-    soup = BeautifulSoup(html, "html.parser")
-    table = soup.find("table", id = "scoresDrawTable")
+    html = get_html(draws_url)
+    table = html.find("table", id = "scoresDrawTable")
 
     if table is None:
         return None
@@ -81,3 +121,19 @@ class Match:
     @staticmethod
     def find_id(player_name):
         return PLAYER_DICT[player_name] if player_name in PLAYER_DICT else None
+
+def get_html(url):
+    # If the url looks like a valid URL, make a request to get it. Otherwise, it's a test, and load it from a local file
+    if url.startswith("http"):
+        html = requests.get(url).text
+    else:
+        if url.startswith("/en"):
+            url = "../tournaments/{}.html".format(url.split("/")[3])
+        with open(url) as f:
+            html = f.read()
+
+    return BeautifulSoup(html, "html.parser")
+
+class InvalidTournamentException(Exception):
+    def __init__(self, name, message):
+        self.message = "Skipping '{}'. {}".format(name, message)

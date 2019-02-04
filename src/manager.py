@@ -48,6 +48,10 @@ class Manager:
         if self.user.get("admin") != 1:
             raise ServiceException("You do not have permission to update master brackets", 403)
 
+        new_tournaments = scraper.scrape_tournaments("https://www.atptour.com/en/tournaments", self.da.get_tournaments())
+        for tournament in new_tournaments:
+            self.create_tournament(tournament)
+
         tournaments = self.da.get_active_tournaments()
         for tournament in tournaments:
             print("Updating draws for {}".format(tournament.get("name")))
