@@ -33,7 +33,7 @@ def get_tournament(base_url, row, existing_tournaments, today = datetime.now()):
     if singles_players < 16:
         raise InvalidTournamentException(name, "Too few singles players. Most likely not a valid tournament.")
 
-    if next((t for t in existing_tournaments if t["name"] == name and t["start_date"] == start_date), None) is not None:
+    if next((t for t in existing_tournaments if t["name"] == name and datetime.strptime(t["start_date"], "%Y-%m-%d") == start_date), None) is not None:
         raise InvalidTournamentException(name, "Tournament already exists.")
 
     overview_url = urljoin(base_url, row.find("a", "tourney-title").attrs.get("href"))

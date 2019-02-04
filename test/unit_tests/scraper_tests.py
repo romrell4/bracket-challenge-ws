@@ -35,7 +35,7 @@ class ScraperTests(TestCase):
         self.assertEqual("Skipping 'London'. Too few singles players. Most likely not a valid tournament.", exception.message)
 
         # Test if the tournament already exists
-        exception = test(datetime(2019, 2, 2), existing_tournaments = [{"name": "Cordoba", "start_date": datetime(2019, 2, 4)}])
+        exception = test(datetime(2019, 2, 2), existing_tournaments = [{"name": "Cordoba", "start_date": "2019-02-04"}])
         self.assertEqual("Skipping 'Cordoba'. Tournament already exists.", exception.message)
 
         tournament = test(datetime(2019, 2, 2))
