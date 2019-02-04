@@ -1,4 +1,5 @@
 import scraper
+import requests
 
 from service_exception import ServiceException
 
@@ -48,10 +49,18 @@ class Manager:
         if self.user.get("admin") != 1:
             raise ServiceException("You do not have permission to update master brackets", 403)
 
+        # Create any new tournaments
         new_tournaments = scraper.scrape_tournaments("https://www.atptour.com/en/tournaments", self.da.get_tournaments())
-        for tournament in new_tournaments:
-            self.create_tournament(tournament)
+        if len(new_tournaments) > 0:
+            for tournament in new_tournaments:
+                self.create_tournament(tournament)
 
+            # Post a slack message anytime tournaments are created
+            requests.post("https://hooks.slack.com/services/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", json = {
+                "text": "Created tournaments:```{}```".format("\n".join([t["name"] for t in new_tournaments]))
+            })
+
+        # For any tournaments that are currently active, scrape their draws
         tournaments = self.da.get_active_tournaments()
         for tournament in tournaments:
             print("Updating draws for {}".format(tournament.get("name")))
