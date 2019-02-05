@@ -2,7 +2,7 @@
 # found in the LICENSE file.
 __license__ = "MIT"
 
-import collections
+from collections import abc as collections
 import re
 import shlex
 import sys

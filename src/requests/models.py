@@ -7,7 +7,7 @@ requests.models
 This module contains the primary objects that power Requests.
 """
 
-import collections
+from collections import abc as collections
 import datetime
 import sys
 
