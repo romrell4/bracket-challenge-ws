@@ -24,7 +24,7 @@ def get_tournament(base_url, row, existing_tournaments, today = datetime.utcnow(
     name = row.find("span", "tourney-location").text.strip().split(",")[0]
     start_date, end_date = [datetime.strptime(value, "%Y.%m.%d") for value in row.find("span", "tourney-dates").text.strip().split(" - ")]
     day_diff = (start_date - today).days
-    if day_diff > 2:
+    if day_diff >= 2:
         raise InvalidTournamentException(name, "Tournament is too far in the future.")
     elif day_diff < 0:
         raise InvalidTournamentException(name, "Tournament has already started.")
