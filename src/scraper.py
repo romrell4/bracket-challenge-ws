@@ -41,6 +41,9 @@ def get_tournament(base_url, row, existing_tournaments, today = datetime.utcnow(
 
     draws_url = urljoin(overview_url, html.find("li", id = "draw_SectionLink").find("a").attrs["href"])
 
+    if "archive" in draws_url:
+        raise InvalidTournamentException(name, "Tournament draws are not published yet.")
+
     image_style = html.find("div", id = "tournamentHero").attrs["style"]
     image_url = urljoin(overview_url, re.match("background-image:url\('(.*)'\)", image_style).group(1))
 

@@ -53,7 +53,8 @@ class Manager:
         new_tournaments = scraper.scrape_tournaments("https://www.atptour.com/en/tournaments", self.da.get_tournaments())
         if len(new_tournaments) > 0:
             for tournament in new_tournaments:
-                self.create_tournament(tournament)
+                try: self.create_tournament(tournament)
+                except ServiceException as e: print(e.error_message)
 
             # Post a slack message anytime tournaments are created
             requests.post("https://hooks.slack.com/services/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", json = {
