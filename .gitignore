@@ -3,3 +3,4 @@ __pycache__
 .idea
 lambda.zip
 .DS_Store
+firebase_creds.json

@@ -1,4 +1,4 @@
-from unittest2 import TestCase
+from unittest import TestCase
 from datetime import date, datetime, timedelta
 
 from da import Dao
