@@ -288,7 +288,7 @@
 					"200": {
 						"description": "Bracket",
 						"schema": {
-							"$ref": "#/definitions/Bracket"
+							"$ref": "#/definitions/bracket"
 						}
 					},
 					"400": {
