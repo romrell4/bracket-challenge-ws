@@ -2,6 +2,7 @@ import auth
 import os
 from unittest import TestCase
 
+from res import properties
 from service_exception import ServiceException
 
 class AuthTest(TestCase):
@@ -23,7 +24,7 @@ class AuthTest(TestCase):
         self.assertEqual(401, e.exception.status_code)
         self.assertEqual("Unable to authenticate with Firebase. Please log out and back in.", e.exception.error_message)
 
-    # def test_valid_token(self):
-    #     user = auth.validate_user({"headers": {"x-firebase-token": "TODO: Get a token to test"}})
-    #     self.assertIn("email", user)
-    #     self.assertIn("name", user)
+    def test_valid_token(self):
+        user = auth.validate_user({"headers": {"x-firebase-token": properties.firebase_test_token}})
+        self.assertIn("email", user)
+        self.assertIn("name", user)
