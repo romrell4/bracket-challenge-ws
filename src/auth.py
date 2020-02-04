@@ -24,9 +24,7 @@ def validate_user(event):
             raise ServiceException("Unable to authenticate with Facebook. Please log out and back in.", 401)
     elif firebase_token is not None:
         try:
-            firebase_user = auth.verify_id_token(firebase_token)
-            print(firebase_user)  # TODO: Figure out what this thing looks like so that you can turn it into a valid user
-            return firebase_user
+            return auth.verify_id_token(firebase_token)
         except Exception as e:
             print(e)
             raise ServiceException("Unable to authenticate with Firebase. Please log out and back in.", 401)

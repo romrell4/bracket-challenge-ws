@@ -14,7 +14,7 @@ class Manager:
             # They are registering a new account
             new_user = {
                 "username": fb_user["email"],
-                "name": fb_user["name"]
+                "name": fb_user.get("name", "Anonymous User")
             }
             return self.da.create_user(new_user)
         else:
