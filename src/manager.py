@@ -52,8 +52,6 @@ class Manager:
 
         # Create any new tournaments
         new_tournaments = scraper.scrape_tournaments("https://www.atptour.com/en/tournaments", self.da.get_tournaments())
-        # TODO: Get rid of this after testing
-        requests.post(os.environ["SLACK_WEBHOOK_URL"], json = {"text": "Test"})
 
         if len(new_tournaments) > 0:
             for tournament in new_tournaments:
